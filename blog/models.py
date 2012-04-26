@@ -14,6 +14,13 @@ class Entry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_update_at = models.DateTimeField(auto_now=True)
 
+    def __unicode__(self):
+        return self.title
+
+    @models.permalink
+    def get_absolute_url(self):
+        return "blog:detail", [self.id]
+
 
 class Version(models.Model):
     entry = models.ForeignKey(Entry)

@@ -11,6 +11,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.test.testcases import LiveServerTestCase
 from selenium import webdriver
+from blog.forms import EntryForm
 from blog.models import Entry
 
 class SimpleTest(TestCase):
@@ -36,9 +37,17 @@ class SimpleTest(TestCase):
 
 
     def test_post(self):
+        resp = self.client.get(reverse("blog:post"))
+        self.assertTemplateUsed(resp, "blog/post.html")
+
+#        resp = self.client.post(reverse("blog:post"))
+#        self.assertFormError(resp, EntryForm, 'title', "This field is required")
+
         resp = self.client.post(reverse("blog:post"), {
             'title': "Test Post",
             'content': "Good Content",
         })
+
+        self.failUnless( Entry.objects.filter(title__exact="Test Post").count() )
         post = Entry.objects.order_by('-id')[0]
         self.assertRedirects(resp, post.get_absolute_url())
