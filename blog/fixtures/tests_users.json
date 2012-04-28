@@ -1,0 +1,20 @@
+[
+  {
+    "pk": 1, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "waylybaye", 
+      "first_name": "", 
+      "last_name": "", 
+      "is_active": true, 
+      "is_superuser": true, 
+      "is_staff": true, 
+      "last_login": "2012-04-26T15:45:33.512Z", 
+      "groups": [], 
+      "user_permissions": [], 
+      "password": "pbkdf2_sha256$10000$jkREEz3PmDde$HyfADTWx1wm5AXGnhLT6cBb6B5xpM+N8CU8B7dk0RO4=", 
+      "email": "havelove@gmail.com", 
+      "date_joined": "2012-04-26T15:45:33.512Z"
+    }
+  }
+]
