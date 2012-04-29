@@ -15,7 +15,7 @@ from blog.forms import EntryForm
 from blog.models import Entry
 
 class SimpleTest(TestCase):
-    fixtures = ['tests_users.json']
+    fixtures = ['tests_users.json', 'tests_posts.json']
 
     def setUp(self):
         self.user = User.objects.get(id=1)
@@ -33,8 +33,6 @@ class SimpleTest(TestCase):
             content = "Hello World",
         )
 
-        self.assertEqual(self.user.entries.count(), 1)
-
 
     def test_post(self):
         resp = self.client.get(reverse("blog:post"))
@@ -51,3 +49,8 @@ class SimpleTest(TestCase):
         self.failUnless( Entry.objects.filter(title__exact="Test Post").count() )
         post = Entry.objects.order_by('-id')[0]
         self.assertRedirects(resp, post.get_absolute_url())
+
+
+    def test_index(self):
+        resp = self.client.get('/')
+        self.assertTemplateUsed(resp, "index.html")

@@ -2,6 +2,10 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+class Blog(models.Model):
+    pass
+
+
 class Entry(models.Model):
     user = models.ForeignKey(User, related_name="entries")
 

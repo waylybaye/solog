@@ -5,6 +5,13 @@ from blog.forms import EntryForm
 from blog.models import Entry
 
 
+def index(request):
+    """
+    Index page
+    """
+    return render_to_response("index.html", {}, RequestContext(request))
+
+
 @login_required
 def post(request):
     """

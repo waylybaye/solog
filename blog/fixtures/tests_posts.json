@@ -1,0 +1,15 @@
+[
+  {
+    "pk": 1, 
+    "model": "blog.entry", 
+    "fields": {
+      "title": "Hello World", 
+      "created_at": "2012-04-28T16:09:18.169Z", 
+      "content_html": "", 
+      "content": "Hello!!", 
+      "last_update_at": "2012-04-28T16:09:18.169Z", 
+      "user": 1, 
+      "slug": "hello-world"
+    }
+  }
+]
