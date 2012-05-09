@@ -9,47 +9,92 @@
 </head>
 <body>
     {% load i18n chunks %}
-    <section id="sl-container" class="row-fluid">
-        <aside id='sl-sidebar' class="span2">
-            <div id="sl-sidebar-inner">
-                waylybaye
-                {% block sidebar %}
-                {% endblock %}
-                {% chunk 'page_sidebar' %}
-            </div>
-        </aside>
-        <div class="span10">
-            <section>
-                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span8"/>
-                <div id="sl-search-holder" class='hide'>
-                    <ul>
-                        <li class="result">
-                            <a class='title' href="/post/dear-python" >Dear <span class="highlighted">Python</span></a>
-                        </li>
-
-                        <li class="result">
-                            <a class='title' href="/post/learn-python" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
-                        </li>
-
-                        <li class="result">
-                            <a class='title' href="/post/ror" >Compare rails</a>
-                            <span class="content"> <span class="highlighted">python</span> is good </span>
-                        </li>
-                    </ul>
-                    <div class='actions'>
-                        <a class='btn btn-primary btn-small' href='#'>{% trans 'Post' %}</a>
+    <section id="sl-container">
+        <div class='row-fluid'>
+            <div class='span2'>
+                <aside id='sl-sidebar'>
+                    <div id="sl-sidebar-inner">
+                        waylybaye
+                        {% block sidebar %}
+                        {% endblock %}
+                        {% chunk 'page_sidebar' %}
                     </div>
-                </div>
-            </section>
-            <section id="sl-content">
-                {% block content %}
-                {% endblock %}
-            </section>
+                </aside>
+            </div>
+            <div class="span10">
+                <section>
+                    <header id='sl-page-header'>
+                    <div class='row-fluid'>
+                            <div class='span8'>
+                                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span11"/>
+                            </div>
+                            <div class='span4'>
+                                <span id='sl-blog-actions'>
+                                    {% if user.is_authenticated %}
+                                    <a class='btn btn-primary btn-small' href='#'>{% trans 'Post' %}</a>
+                                    {% else %}
+                                        <a class='btn btn-small btn-show-login' href='{% url account:login %}'>{% trans 'Login' %}</a>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        <div class='clear-fix'></div>
+                    </div>
+                    </header>
+
+                    <div id="sl-search-holder" class='hide'>
+                        <ul>
+                            <li class="result">
+                                <a class='title' href="/post/dear-python" >Dear <span class="highlighted">Python</span></a>
+                            </li>
+
+                            <li class="result">
+                                <a class='title' href="/post/learn-python" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
+                            </li>
+
+                            <li class="result">
+                                <a class='title' href="/post/ror" >Compare rails</a>
+                                <span class="content"> <span class="highlighted">python</span> is good </span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+                <section id="sl-content">
+                    <header id='sl-content-header'>
+                        {% chunk 'content-header' %}
+                    </header>
+                    {% block content %}
+                    {% endblock %}
+                    <footer id='sl-content-footer'>
+                        {% chunk 'content-footer' %}
+                    </footer>
+                </section>
+            </div>
+        </div><!-- .row-fluid -->
+    </section>
+
+    <section class='modal hide' id='modal-login'>
+        <div class='modal-header'>
+            <button class='close' data-dismiss='modal'>x</button>
+            <h3>{% trans 'Login' %}</h3>
+        </div>
+        <div class='modal-body'>
+            <form action='{% url account:login %}' method='post' id='login-form'>
+                {% csrf_token %}
+                <p>
+                <input type="text" name='username'  placeholder='{% trans 'username' %}'/>
+                </p><p>
+                <input type="password" name='password'  placeholder='{% trans 'password' %}'/>
+                </p>
+            </form>
+        </div>
+        <div class='modal-footer'>
+            <button class='btn btn-login btn-primary btn-small' >{% trans 'Login' %}</button>
         </div>
     </section>
 
     <script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.history.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
     <script type="text/javascript">
         (function(window, undefined){
             var History = window.History,
@@ -58,6 +103,9 @@
 
             $(function(){
                 $('a').on('click', function(){
+                    if( $(this).hasClass('btn') ){
+                        return true;
+                    }
                     var href = $(this).attr('href');
                     if( href.substring(0, 7) === 'http://' && href.substring(0, rootUrl.length) !== rootUrl){
                         return true;
@@ -105,7 +153,22 @@
                 });
 
             })
-        })(this);
+
+            $('.btn-show-login').click(function(){
+                $('#modal-login').modal();
+                return false;
+            });
+            $('.btn-login').click(function(){
+                $.post('{% url account:login %}', $('#login-form').serialize(), function(data){
+                   if( data.success ){
+                       window.location.reload();
+                   }else{
+                        alert(data.message);
+                   }
+                }, 'json');
+                return false;
+            });
+        })(window);
     </script>
     {% block extra_body %}
     {% endblock %}
