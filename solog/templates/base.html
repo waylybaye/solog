@@ -43,20 +43,6 @@
                     </header>
 
                     <div id="sl-search-holder" class='hide'>
-                        <ul>
-                            <li class="result">
-                                <a class='title' href="/post/dear-python" >Dear <span class="highlighted">Python</span></a>
-                            </li>
-
-                            <li class="result">
-                                <a class='title' href="/post/learn-python" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
-                            </li>
-
-                            <li class="result">
-                                <a class='title' href="/post/ror" >Compare rails</a>
-                                <span class="content"> <span class="highlighted">python</span> is good </span>
-                            </li>
-                        </ul>
                     </div>
                 </section>
                 <section id="sl-content">
@@ -172,7 +158,7 @@
 
             $('#sl-search-bar').keyup(function(){
                 var q = $(this).val();
-                $('#sl-search-holder').load('{% url search %}?q=' + q);
+                $('#sl-search-holder').load('{% url search %}?q=' + encodeURIComponent(q));
             });
         })(window);
     </script>

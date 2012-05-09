@@ -6,6 +6,7 @@ class PostIndex(indexes.SearchIndex, indexes.Indexable):
     author = indexes.CharField(model_attr='user')
     text = indexes.CharField(document=True, use_template=True)
 
+    content_auto = indexes.NgramField(model_attr='content')
+
     def get_model(self):
         return Post
-

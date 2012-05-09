@@ -40,5 +40,7 @@ def detail(request, entry_id=None):
 
 def search(request):
     q = request.GET.get('q')
-    results = SearchQuerySet().filter(text=q)
+    queryset = SearchQuerySet()
+    results = queryset.autocomplete(content_auto=q)
+    #results = queryset.filter(text=q)
     return render_to_response('blog/search.html', {'results': results, 'q': q}, RequestContext(request))
