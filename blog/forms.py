@@ -1,7 +1,7 @@
 from django import forms
-from blog.models import Entry
+from blog.models import Post
 
 class EntryForm(forms.ModelForm):
     class Meta:
-        model = Entry
+        model = Post
         fields = ('title', 'content')

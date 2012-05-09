@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template.context import RequestContext
 from blog.forms import EntryForm
-from blog.models import Entry
+from blog.models import Post
 
 
 def index(request):
@@ -32,6 +32,6 @@ def post(request):
 
 
 def detail(request, entry_id=None):
-    entry = get_object_or_404(Entry, id=entry_id)
+    entry = get_object_or_404(Post, id=entry_id)
     context = {'entry': entry}
     return render_to_response("blog/detail.html", context, RequestContext(request))

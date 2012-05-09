@@ -12,7 +12,7 @@ from django.test.client import Client
 from django.test.testcases import LiveServerTestCase
 from selenium import webdriver
 from blog.forms import EntryForm
-from blog.models import Entry
+from blog.models import Post
 
 class SimpleTest(TestCase):
     fixtures = ['tests_users.json', 'tests_posts.json']
@@ -27,9 +27,9 @@ class SimpleTest(TestCase):
 
 
     def test_blog(self):
-        entry = Entry.objects.create(
+        entry = Post.objects.create(
             user = self.user,
-            title = "First Entry",
+            title = "First Post",
             content = "Hello World",
         )
 
@@ -46,8 +46,8 @@ class SimpleTest(TestCase):
             'content': "Good Content",
         })
 
-        self.failUnless( Entry.objects.filter(title__exact="Test Post").count() )
-        post = Entry.objects.order_by('-id')[0]
+        self.failUnless( Post.objects.filter(title__exact="Test Post").count() )
+        post = Post.objects.order_by('-id')[0]
         self.assertRedirects(resp, post.get_absolute_url())
 
 

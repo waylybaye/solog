@@ -15,7 +15,7 @@ class Blog(models.Model):
     objects = BlogManager()
 
 
-class Entry(models.Model):
+class Post(models.Model):
     user = models.ForeignKey(User, related_name="entries")
 
     title = models.CharField(max_length=100)
@@ -36,7 +36,7 @@ class Entry(models.Model):
 
 
 class Version(models.Model):
-    entry = models.ForeignKey(Entry)
+    entry = models.ForeignKey(Post)
     revision = models.IntegerField()
 
     content = models.TextField()
