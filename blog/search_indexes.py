@@ -20,7 +20,7 @@ class PostIndex(indexes.RealTimeSearchIndex, indexes.Indexable):
         return segment(object.title)
 
     def prepare_author(self, object):
-        return segment(object.user.get_full_name())
+        return segment(object.user.get_full_name() + ' ' + object.user.username)
 
     def prepare_content_auto(self, object):
         return segment(object.content)
@@ -30,5 +30,5 @@ class PostIndex(indexes.RealTimeSearchIndex, indexes.Indexable):
 
     def prepare(self, object):
         self.prepared_data = super(PostIndex, self).prepare(object)
-        self.prepared_data['text'] = self.prepared_data['title'] + self.prepared_data['author'] + self.prepared_data['content_auto']
+        self.prepared_data['text'] = self.prepared_data['title'] + ' ' + self.prepared_data['author'] +  ' ' + self.prepared_data['content_auto']
         return self.prepared_data

@@ -15,7 +15,7 @@ body{ background: #f1f1f1;}
 #sl-search-holder ul li{ list-style: none; padding: 5px 10px;}
 #sl-search-holder ul li:hover{ background: lightBlue; }
 #sl-search-holder ul li.result span.highlighted{ font-weight: bold; }
-#sl-search-holder ul li.result a.title{ font-size: 13px; text-decoration: none; margin-right: 3em;}
+#sl-search-holder ul li.result a.title{ font-size: 13px; text-decoration: none; margin-right: 3em; min-width: 200px; display: inline-block;}
 #sl-search-holder ul li.result span.content{ font-size: 12px; color: gray; font-style: italic;}
 /*
 #sl-blog-action .actions{ padding: 7px 10px; background: #f1f1f1; }
@@ -26,3 +26,6 @@ body{ background: #f1f1f1;}
 
 #modal-login{ width: 270px; left: 60%;}
 #modal-login .modal-body{ text-align: center; }
+
+#post-form #id_title{ width: 500px; }
+#post-form #id_content{ width: 500px; height: 200px; }
