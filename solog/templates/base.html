@@ -26,16 +26,19 @@
                     <header id='sl-page-header'>
                     <div class='row-fluid'>
                             <div class='span8'>
-                                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span11"/>
+                                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span12"/>
                             </div>
                             <div class='span4'>
-                                <span id='sl-blog-actions'>
+                                <span id='sl-actions'>
                                     {% if user.is_authenticated %}
                                         <a class='btn btn-small ajaxable' href='{% url blog:post %}'>{% trans 'Post' %}</a>
                                         <a class='btn btn-small btn-logout' href='{% url account:logout %}'>{% trans 'Logout' %}</a>
                                     {% else %}
                                         <a class='btn btn-small btn-show-login' href='{% url account:login %}'>{% trans 'Login' %}</a>
                                     {% endif %}
+
+                                    {% block page_actions %}
+                                    {% endblock %}
                                 </span>
                             </div>
                         <div class='clear-fix'></div>
@@ -97,28 +100,8 @@
                     if( href.substring(0, 7) === 'http://' && href.substring(0, rootUrl.length) !== rootUrl){
                         return true;
                     }
-                    $.ajax({
-                        url: href,
-                        success: function(data, textStatus, jqXHR){
-                            if( data ){
-                                var html = String(data)
-                                    .replace(/<\!DOCTYPE[^>]*>/i, '')
-                                    .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
-                                    .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
 
-                                $dom = $(html)
-                                var title = $dom.find('title').text();
-                                History.pushState(null, title, href);
-                                document.title = title;
-                                $('#sl-content').html( $dom.find('#sl-content').html() );
-                                $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown){
-                            document.location.href = href;
-                            return false;
-                        }
-                    });
+                    History.pushState(null, $(this).text(), href);
                     $('#sl-search-bar').blur();
                     $('#sl-search-holder').hide();
                     return false;
@@ -129,6 +112,30 @@
                     var State = History.getState(),
                         url = State.url,
                         relativeUrl = url.replace(rootUrl, '');
+
+                        $.ajax({
+                            url: url,
+                            success: function(data, textStatus, jqXHR){
+                                if( data ){
+                                    var html = String(data)
+                                        .replace(/<\!DOCTYPE[^>]*>/i, '')
+                                        .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
+                                        .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
+
+                                    $dom = $(html)
+                                    var title = $dom.find('title').text();
+                                    document.title = title;
+                                    $('#sl-content').html( $dom.find('#sl-content').html() );
+                                    $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
+                                    $('#sl-actions').html( $dom.find('#sl-actions').html() );
+                                }
+                            },
+                            error: function(jqXHR, textStatus, errorThrown){
+                                document.location.href = url;
+                                return false;
+                            }
+                        });
+
                 });
 
                 $('#sl-search-bar').focus(function(){
@@ -145,6 +152,7 @@
                 $('#modal-login').modal();
                 return false;
             });
+
             $('.btn-login').click(function(){
                 $.post('{% url account:login %}', $('#login-form').serialize(), function(data){
                    if( data.success ){

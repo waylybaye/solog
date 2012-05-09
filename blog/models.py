@@ -15,6 +15,14 @@ class Blog(models.Model):
     objects = BlogManager()
 
 
+FORMAT_CHOICES = (
+    ('restructuredtext', 'reST (reStructuredText)'),
+    ('textile', 'Textile'),
+    ('markdown', 'Markdown'),
+    ('html', 'HTML'),
+    ('txt', 'Plain Text'),
+)
+
 class Post(models.Model):
     user = models.ForeignKey(User, related_name="entries")
 
@@ -23,6 +31,7 @@ class Post(models.Model):
 
     content = models.TextField(default="")
     content_html = models.TextField(default="")
+    content_format = models.CharField(max_length='30', choices=FORMAT_CHOICES)
 
     created_at = models.DateTimeField(auto_now_add=True)
     last_update_at = models.DateTimeField(auto_now=True)

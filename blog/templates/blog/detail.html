@@ -1,12 +1,20 @@
 {% extends 'base.html' %}
-{% load webdesign %}
-{% block title %}{{ entry.title }}{% endblock %}
+{% load i18n markup %}
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block page_actions %}
+    <a class='btn btn-small ajaxable' href='{% url blog:edit post.id %}'>{% trans 'Edit' %}</a>
+{% endblock %}
 
 {% block content %}
-    <h1>{{ entry.title }}</h1>
+    <h1>{{ post.title }}</h1>
 
     <div>
-        {{ entry.content }}
+        {% with post.content_format as format %}
+        {% if format == 'markdown' %}
+            {{ post.content|markdown:'safe' }}
+        {% endif %}
+        {% endwith %}
     </div>
 
 {% endblock %}
