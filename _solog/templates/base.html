@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css"/>
+    {% block extra_head %}
+    {% endblock %}
+</head>
+<body>
+    {% load i18n %}
+    <section id="s-container" class="row-fluid">
+        <aside id='s-sidebar' class="span2">
+            <div id="sl-sidebar-inner">
+
+                waylybaye
+                {% block sidebar %}
+                {% endblock %}
+            </div>
+        </aside>
+        <div class="span10">
+            <section>
+                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span8"/>
+                <div id="sl-search-holder" class='hide'>
+                    <ul>
+                        <li class="result">
+                            <a class='title' href="/23#" >Dear <span class="highlighted">Python</span></a>
+                        </li>
+
+                        <li class="result">
+                            <a class='title' href="/23#" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
+                        </li>
+
+                        <li class="result">
+                            <a class='title' href="/23#" >Compare rails</a>
+                            <span class="content"> <span class="highlighted">python</span> is good </span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <section id="sl-content">
+                {% block content %}
+                {% endblock %}
+            </section>
+        </div>
+    </section>
+
+    <script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            $('#sl-search-bar').focus(function(){
+                $('#sl-search-holder').show();
+            })
+            .blur(function(){
+                if( ! $('#sl-search-holder').is(':hover') ){
+                    $('#sl-search-holder').hide();
+                }
+            });
+        })
+    </script>
+    {% block extra_body %}
+    {% endblock %}
+</body>
+</html>

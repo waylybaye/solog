@@ -1,0 +1,15 @@
+body{ background: #f1f1f1;}
+#s-container{ width: 900px; margin: 1em auto;  }
+#s-sidebar{ text-align: right; }
+#sl-sidebar-inner{ padding: 10px 0; position: fixed; text-align: right;}
+#sl-content{ background: #fff; padding: 1em; margin: 1em 0;}
+#sl-search-bar{ border-radius: 0; font-style: italic; --webkit-border-radius: 0; --moz-border-radius: 0; box-shadow: none;
+    margin-bottom: 0;}
+#sl-search-holder{ min-height: 100px; background: #fff; border: 1px solid #cccccc; margin-top: -1px; }
+
+#sl-search-holder ul{ padding: 0; margin: 0;}
+#sl-search-holder ul li{ list-style: none; padding: 3px 10px;}
+#sl-search-holder ul li:hover{ background: lightBlue; }
+#sl-search-holder ul li.result span.highlighted{ font-weight: bold; }
+#sl-search-holder ul li.result a.title{ font-size: 14px; text-decoration: none; margin-right: 3em;}
+#sl-search-holder ul li.result span.content{ font-size: 12px; color: gray; font-style: italic;}
