@@ -24,15 +24,15 @@
                 <div id="sl-search-holder" class='hide'>
                     <ul>
                         <li class="result">
-                            <a class='title' href="/23#" >Dear <span class="highlighted">Python</span></a>
+                            <a class='title' href="/post/dear-python" >Dear <span class="highlighted">Python</span></a>
                         </li>
 
                         <li class="result">
-                            <a class='title' href="http://baidu.com" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
+                            <a class='title' href="/post/learn-python" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
                         </li>
 
                         <li class="result">
-                            <a class='title' href="/23#" >Compare rails</a>
+                            <a class='title' href="/post/ror" >Compare rails</a>
                             <span class="content"> <span class="highlighted">python</span> is good </span>
                         </li>
                     </ul>
@@ -42,7 +42,6 @@
                 </div>
             </section>
             <section id="sl-content">
-                <a href='123.htl'>Go</a>
                 {% block content %}
                 {% endblock %}
             </section>
@@ -75,6 +74,9 @@
                                 $dom = $(html)
                                 var title = $dom.find('title').text();
                                 History.pushState(null, title, href);
+                                document.title = title;
+                                $('#sl-content').html( $dom.find('#sl-content').html() );
+                                $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
                             }
                         },
                         error: function(jqXHR, textStatus, errorThrown){
@@ -82,6 +84,8 @@
                             return false;
                         }
                     });
+                    $('#sl-search-bar').blur();
+                    $('#sl-search-holder').hide();
                     return false;
                 });
 
