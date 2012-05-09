@@ -7,6 +7,7 @@ body{ background: #f1f1f1;}
     margin-bottom: 0;}
 #sl-search-holder{ min-height: 100px; background: #fff; border: 1px solid #cccccc; margin-top: -1px; }
 
+#sl-search-holder{ padding: 0; margin: 0;}
 #sl-search-holder ul{ padding: 0; margin: 0;}
 #sl-search-holder ul li{ list-style: none; padding: 3px 10px;}
 #sl-search-holder ul li:hover{ background: lightBlue; }
