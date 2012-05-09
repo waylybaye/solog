@@ -1,9 +1,18 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
+
+
+class BlogManager(models.Manager):
+    def get_current(self):
+        return self.get(id=1)
 
 
 class Blog(models.Model):
-    pass
+    name = models.CharField(max_length=50, verbose_name=u"Blog Name")
+    description = models.TextField(_(u"Blog Description"))
+
+    objects = BlogManager()
 
 
 class Entry(models.Model):
