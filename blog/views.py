@@ -4,6 +4,7 @@ from django.template.context import RequestContext
 from haystack.query import SearchQuerySet
 from blog.forms import EntryForm
 from blog.models import Post
+from mmseg import seg_txt
 
 
 def index(request):
@@ -40,7 +41,8 @@ def detail(request, entry_id=None):
 
 def search(request):
     q = request.GET.get('q')
+    q = ' '.join([t.decode('utf8') for t in seg_txt(q.encode('utf8')) ])
     queryset = SearchQuerySet()
-    results = queryset.autocomplete(content_auto=q)
-    #results = queryset.filter(text=q)
+    #results = queryset.autocomplete(content_auto=q)
+    results = queryset.filter(text=q)
     return render_to_response('blog/search.html', {'results': results, 'q': q}, RequestContext(request))

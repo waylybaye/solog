@@ -2,3 +2,4 @@ django==1.4
 django-chunks
 git+https://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
 whoosh
+mmseg
