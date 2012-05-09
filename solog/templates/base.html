@@ -8,14 +8,14 @@
     {% endblock %}
 </head>
 <body>
-    {% load i18n %}
-    <section id="s-container" class="row-fluid">
-        <aside id='s-sidebar' class="span2">
+    {% load i18n chunks %}
+    <section id="sl-container" class="row-fluid">
+        <aside id='sl-sidebar' class="span2">
             <div id="sl-sidebar-inner">
-
                 waylybaye
                 {% block sidebar %}
                 {% endblock %}
+                {% chunk 'page_sidebar' %}
             </div>
         </aside>
         <div class="span10">
@@ -28,7 +28,7 @@
                         </li>
 
                         <li class="result">
-                            <a class='title' href="/23#" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
+                            <a class='title' href="http://baidu.com" >学习 <span class="highlighted">Python</span> 奇偶爱吃</a>
                         </li>
 
                         <li class="result">
@@ -36,9 +36,13 @@
                             <span class="content"> <span class="highlighted">python</span> is good </span>
                         </li>
                     </ul>
+                    <div class='actions'>
+                        <a class='btn btn-primary btn-small' href='#'>{% trans 'Post' %}</a>
+                    </div>
                 </div>
             </section>
             <section id="sl-content">
+                <a href='123.htl'>Go</a>
                 {% block content %}
                 {% endblock %}
             </section>
@@ -46,17 +50,58 @@
     </section>
 
     <script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.history.js"></script>
     <script type="text/javascript">
-        $(function(){
-            $('#sl-search-bar').focus(function(){
-                $('#sl-search-holder').show();
+        (function(window, undefined){
+            var History = window.History,
+                $ = window.jQuery,
+                document = window.document;
+
+            $(function(){
+                $('a').on('click', function(){
+                    var href = $(this).attr('href');
+                    if( href.substring(0, 7) === 'http://' && href.substring(0, rootUrl.length) !== rootUrl){
+                        return true;
+                    }
+                    $.ajax({
+                        url: href,
+                        success: function(data, textStatus, jqXHR){
+                            if( data ){
+                                var html = String(data)
+                                    .replace(/<\!DOCTYPE[^>]*>/i, '')
+                                    .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
+                                    .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
+
+                                $dom = $(html)
+                                var title = $dom.find('title').text();
+                                History.pushState(null, title, href);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown){
+                            document.location.href = href;
+                            return false;
+                        }
+                    });
+                    return false;
+                });
+
+                var rootUrl = History.getRootUrl();
+                $(window).on('statechange', function(){
+                    var State = History.getState(),
+                        url = State.url,
+                        relativeUrl = url.replace(rootUrl, '');
+                });
+
+                $('#sl-search-bar').focus(function(){
+                    $('#sl-search-holder').show();
+                }).blur(function(){
+                    if( ! $('#sl-search-holder').is(':hover') ){
+                        $('#sl-search-holder').hide();
+                    }
+                });
+
             })
-            .blur(function(){
-                if( ! $('#sl-search-holder').is(':hover') ){
-                    $('#sl-search-holder').hide();
-                }
-            });
-        })
+        })(this);
     </script>
     {% block extra_body %}
     {% endblock %}
