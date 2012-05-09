@@ -32,7 +32,6 @@ def post(request):
 
 
 def detail(request, entry_id=None):
-    #entry = get_object_or_404(Entry, id=entry_id)
-    #context = {'entry': entry}
-    context = {}
+    entry = get_object_or_404(Entry, id=entry_id)
+    context = {'entry': entry}
     return render_to_response("blog/detail.html", context, RequestContext(request))
