@@ -31,7 +31,8 @@
                             <div class='span4'>
                                 <span id='sl-blog-actions'>
                                     {% if user.is_authenticated %}
-                                    <a class='btn btn-primary btn-small' href='#'>{% trans 'Post' %}</a>
+                                        <a class='btn btn-small btn-small' href='#'>{% trans 'Post' %}</a>
+                                        <a class='btn btn-small btn-logout' href='{% url account:logout %}'>{% trans 'Logout' %}</a>
                                     {% else %}
                                         <a class='btn btn-small btn-show-login' href='{% url account:login %}'>{% trans 'Login' %}</a>
                                     {% endif %}

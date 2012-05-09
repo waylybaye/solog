@@ -1,5 +1,6 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.utils import simplejson
 from django.utils.translation import ugettext as _
 
@@ -18,3 +19,8 @@ def account_login(request):
 
     login(request, user)
     return render_json(success=True)
+
+
+def account_logout(request):
+    logout(request)
+    return redirect('/')
