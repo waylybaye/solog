@@ -10,11 +10,7 @@
     <h1>{{ post.title }}</h1>
 
     <div>
-        {% with post.content_format as format %}
-        {% if format == 'markdown' %}
-            {{ post.content|markdown:'safe' }}
-        {% endif %}
-        {% endwith %}
+        {{ post.content_html|safe }}
     </div>
 
 {% endblock %}

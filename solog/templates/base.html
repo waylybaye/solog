@@ -49,6 +49,10 @@
                     </div>
                 </section>
                 <section id="sl-content">
+                    <div id='sl-ajax-loading'>
+                        <img src='{{ STATIC_URL }}img/loading.gif' />
+                    </div>
+
                     <header id='sl-content-header'>
                         {% chunk 'content-header' %}
                     </header>
@@ -92,8 +96,8 @@
                 document = window.document;
 
             $(function(){
-                $('a').on('click', function(){
-                    if( $(this).hasClass('btn') && !$(this).hasClass('ajaxable')){
+                $('a').live('click', function(){
+                    if( $(this).hasClass('btn') && ! $(this).hasClass('ajaxable')){
                         return true;
                     }
                     var href = $(this).attr('href');
@@ -113,29 +117,31 @@
                         url = State.url,
                         relativeUrl = url.replace(rootUrl, '');
 
-                        $.ajax({
-                            url: url,
-                            success: function(data, textStatus, jqXHR){
-                                if( data ){
-                                    var html = String(data)
-                                        .replace(/<\!DOCTYPE[^>]*>/i, '')
-                                        .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
-                                        .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
+                    $('body').addClass('loading');
+                    $.ajax({
+                        url: url,
+                        success: function(data, textStatus, jqXHR){
+                            if( data ){
+                                var html = String(data)
+                                    .replace(/<\!DOCTYPE[^>]*>/i, '')
+                                    .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
+                                    .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
 
-                                    $dom = $(html)
-                                    var title = $dom.find('title').text();
-                                    document.title = title;
-                                    $('#sl-content').html( $dom.find('#sl-content').html() );
-                                    $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
-                                    $('#sl-actions').html( $dom.find('#sl-actions').html() );
-                                }
-                            },
-                            error: function(jqXHR, textStatus, errorThrown){
-                                document.location.href = url;
-                                return false;
+                                $dom = $(html)
+                                var title = $dom.find('title').text();
+                                document.title = title;
+                                $('#sl-content').html( $dom.find('#sl-content').html() );
+                                $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
+                                $('#sl-actions').html( $dom.find('#sl-actions').html() );
                             }
-                        });
-
+                            $('body').removeClass('loading');
+                        },
+                        error: function(jqXHR, textStatus, errorThrown){
+                            document.location.href = url;
+                            $('body').removeClass('loading');
+                            return false;
+                        }
+                    });
                 });
 
                 $('#sl-search-bar').focus(function(){

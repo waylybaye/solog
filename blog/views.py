@@ -23,6 +23,14 @@ def format_content(format, content):
         if format == 'markdown':
             import markdown
             return markdown.markdown(content)
+        elif format == 'txt':
+            return content
+        elif format == 'html':
+            return content
+        elif format == 'textile':
+            return content
+        elif format == 'restructuredtext':
+            return content
 
     except ImportError:
         raise Exception('You should install "%s" to use %s format.' % (depend.get(format),  format))

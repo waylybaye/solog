@@ -5,7 +5,7 @@
         <li class='result'>
             <a class='title' href='{{ post.get_absolute_url }}'>{% highlight post.title with q %}</a>
             <span class='content'>
-                {% highlight post.content with q max_length 40 %}
+                {% highlight post.content with q max_length 30 %}
             </span>
         </li>
     {% endwith %}
