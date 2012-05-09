@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template.context import RequestContext
+from haystack.query import SearchQuerySet
 from blog.forms import EntryForm
 from blog.models import Post
 
@@ -35,3 +36,9 @@ def detail(request, entry_id=None):
     entry = get_object_or_404(Post, id=entry_id)
     context = {'entry': entry}
     return render_to_response("blog/detail.html", context, RequestContext(request))
+
+
+def search(request):
+    q = request.GET.get('q')
+    results = SearchQuerySet().filter(text=q)
+    return render_to_response('blog/search.html', {'results': results, 'q': q}, RequestContext(request))

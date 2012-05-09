@@ -1,0 +1,13 @@
+{% load highlight %}
+<ul>
+{% for result in results %}
+    {% with result.object as post %}
+        <li class='result'>
+            <a class='title' href='{{ post.get_absolute_url }}'>{% highlight post.title with q %}</a>
+            <span class='content'>
+                {% highlight post.content with q max_length 50 %}
+            </span>
+        </li>
+    {% endwith %}
+{% endfor %}
+</ul>

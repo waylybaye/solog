@@ -169,6 +169,11 @@
                 }, 'json');
                 return false;
             });
+
+            $('#sl-search-bar').keyup(function(){
+                var q = $(this).val();
+                $('#sl-search-holder').load('{% url search %}?q=' + q);
+            });
         })(window);
     </script>
     {% block extra_body %}
