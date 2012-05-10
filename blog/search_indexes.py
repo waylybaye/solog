@@ -1,8 +1,7 @@
 from haystack import indexes
 from blog.models import Post
-from mmseg import seg_txt
+from blog.utils import segment
 
-segment = lambda string: u' '.join([ txt.decode('utf8') for txt in seg_txt( string.encode('utf8')) ])
 
 class PostIndex(indexes.RealTimeSearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
@@ -25,10 +24,8 @@ class PostIndex(indexes.RealTimeSearchIndex, indexes.Indexable):
     def prepare_content_auto(self, object):
         return segment(object.content)
 
-    #def prepare_text(self, object):
-    #    return self.prepare_title(object) + self.prepare_author(object) + self.prepare_content_auto(object)
-
     def prepare(self, object):
+        print "index", object, "..."
         self.prepared_data = super(PostIndex, self).prepare(object)
         self.prepared_data['text'] = self.prepared_data['title'] + ' ' + self.prepared_data['author'] +  ' ' + self.prepared_data['content_auto']
         return self.prepared_data
