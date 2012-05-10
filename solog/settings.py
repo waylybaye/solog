@@ -128,9 +128,9 @@ INSTALLED_APPS = (
     'django.contrib.webdesign',
     'django.contrib.markup',
     # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+    'django.contrib.admindocs',
     'blog',
     'chunks',
     'haystack',
