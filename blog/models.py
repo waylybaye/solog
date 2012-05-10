@@ -23,6 +23,17 @@ FORMAT_CHOICES = (
     ('txt', 'Plain Text'),
 )
 
+
+class PostManager(models.Manager):
+    def post(user, title, content, format='txt'):
+        return self.create(
+            user = user,
+            title = title,
+            content = content,
+            content_format = format,
+        )
+
+
 class Post(models.Model):
     user = models.ForeignKey(User, related_name="entries")
 

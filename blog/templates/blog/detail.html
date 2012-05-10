@@ -1,16 +1,23 @@
 {% extends 'base.html' %}
 {% load i18n markup %}
+
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block page_actions %}
-    <a class='btn btn-small ajaxable' href='{% url blog:edit post.id %}'>{% trans 'Edit' %}</a>
+    {% if user.is_authenticated %}
+        <a class='btn btn-small ajaxable' href='{% url blog:edit post.id %}'>{% trans 'Edit' %}</a>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-    <h1>{{ post.title }}</h1>
-
-    <div>
-        {{ post.content_html|safe }}
-    </div>
+    <article>
+        <h2>{{ post.title }}</h2>
+        <div>
+            {% autoescape off %}
+            {{ post.content_html }}
+            {% endautoescape %}
+        </div>
+        <aside> {{ post.created_at|date }} </aside>
+    </article>
 
 {% endblock %}

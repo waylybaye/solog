@@ -2,6 +2,15 @@
 {% load webdesign %}
 
 {% block content %}
-    <h2>Test</h2>
-    {% lorem 20 p %}
+    {% for post in posts %}
+        <article>
+            <h2><a href='{{ post.get_absolute_url }}'>{{ post.title }}</a></h2>
+            <div>
+                {% autoescape off %}
+                {{ post.content_html }}
+                {% endautoescape %}
+            </div>
+            <aside> {{ post.created_at|date }} </aside>
+        </article>
+    {% endfor %}
 {% endblock %}

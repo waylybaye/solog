@@ -12,7 +12,8 @@ def index(request):
     """
     Index page
     """
-    return render_to_response("index.html", {}, RequestContext(request))
+    posts = Post.objects.order_by('-id')[:5]
+    return render_to_response("index.html", {'posts': posts}, RequestContext(request))
 
 
 def format_content(format, content):
