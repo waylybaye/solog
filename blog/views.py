@@ -66,7 +66,6 @@ def detail(request, entry_id=None):
 def search(request):
     q = request.GET.get('q')
     q = segment(q)
-    print q
     queryset = SearchQuerySet()
     results = queryset.autocomplete(content_auto=q) | queryset.filter(text=q)
     return render_to_response('blog/search.html', {'results': results, 'q': q}, RequestContext(request))

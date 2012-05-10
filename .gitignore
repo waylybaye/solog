@@ -1,3 +1,5 @@
 SoloG/local_settings.py
 *.pyc
 .idea
+whoosh_index
+dev.db
