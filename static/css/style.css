@@ -34,5 +34,6 @@ body{ background: #f1f1f1;}
 body.loading #sl-ajax-loading{ display: block; }
 body.loading #sl-content{ background: rgba(255, 255, 204, 0.6);}
 
-article h2{ font-size: 14px; margin: 3px 0 5px;}
+article h2, h3, h4, h5{ font-size: 14px; margin: 3px 0 5px;}
 article aside{ font-size: 12px; color: gray; }
+article{ margin-bottom: 2em; }
