@@ -1,7 +1,7 @@
 body{ background: #f1f1f1;}
 #sl-container{ width: 900px; margin: 1em auto;  }
 #sl-sidebar{ text-align: right; }
-#sl-sidebar-inner{ padding: 10px 0; position: fixed; text-align: right;}
+#sl-sidebar-inner{ padding: 0; position: fixed; text-align: right; width: 130px;}
 /*
 #sl-page-header{ position: fixed; width: 746px;}
 */
