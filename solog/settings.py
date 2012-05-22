@@ -118,7 +118,7 @@ TEMPLATE_DIRS = (
     relative_path("solog/templates"),
 )
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -134,7 +134,13 @@ INSTALLED_APPS = (
     'blog',
     'chunks',
     'haystack',
-)
+]
+
+try:
+    import south
+    INSTALLED_APPS.append('south')
+except ImportError:
+    pass
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
