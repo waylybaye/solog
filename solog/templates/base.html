@@ -52,6 +52,17 @@
                         <img src='{{ STATIC_URL }}img/loading.gif' />
                     </div>
 
+                    {% if messages %}
+                        <div id='alert-messages'>
+                            {% for msg in messages %}
+                                <div class="alert fade in alert-{{ msg.tags }}">
+                                    <a class="close" data-dismiss="alert" href='#'>x</a>
+                                    <strong>{{ msg|safe }}</strong>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <header id='sl-content-header'>
                         {% chunk 'content-header' %}
                     </header>
@@ -100,6 +111,9 @@
                         return true;
                     }
                     var href = $(this).attr('href');
+                    if( href === '#' ){
+                        return true;
+                    }
                     if( href.substring(0, 7) === 'http://' && href.substring(0, rootUrl.length) !== rootUrl){
                         return true;
                     }

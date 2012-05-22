@@ -1,7 +1,10 @@
 from importlib import import_module
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.markup.templatetags.markup import restructuredtext
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template.context import RequestContext
+from django.template.defaultfilters import linebreaksbr
 from haystack.query import SearchQuerySet
 from blog.forms import EntryForm
 from blog.models import Post
@@ -24,13 +27,21 @@ def format_content(format, content):
             import markdown
             return markdown.markdown(content)
         elif format == 'txt':
-            return content
+            return linebreaksbr(content)
         elif format == 'html':
             return content
         elif format == 'textile':
-            return content
+            try:
+                import textile
+                return textile.textile(content)
+            except ImportError:
+                raise Exception(u"You must install PyTextile to use textile format.")
         elif format == 'restructuredtext':
-            return content
+            try:
+                import docutils
+                return restructuredtext(content)
+            except ImportError:
+                raise Exception(u"You must install docutils to use reST format.")
 
     except ImportError:
         raise Exception('You should install "%s" to use %s format.' % (depend.get(format),  format))
@@ -47,9 +58,13 @@ def post(request, post_id=None):
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
-            post.content_html = format_content(post.content_format, post.content)
-            post.save()
-            return redirect(post.get_absolute_url())
+            try:
+                post.content_html = format_content(post.content_format, post.content)
+                post.save()
+                return redirect(post.get_absolute_url())
+            except Exception, e:
+                messages.error(request, e.message)
+
     else:
         form = EntryForm(instance=post)
 

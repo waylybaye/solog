@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from datetime import datetime
 
 
 class BlogManager(models.Manager):
@@ -44,7 +45,7 @@ class Post(models.Model):
     content_html = models.TextField(default="")
     content_format = models.CharField(max_length='30', choices=FORMAT_CHOICES)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=datetime.now)
     last_update_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
