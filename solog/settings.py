@@ -14,7 +14,7 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-default_db = 'sqlite://%s' % relative_path('dev.db')
+default_db = 'sqlite:///%s' % relative_path('dev.db')
 DATABASES = {
     'default': dj_database_url.config(default=default_db)
 }
