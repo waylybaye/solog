@@ -1,4 +1,3 @@
-from importlib import import_module
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.markup.templatetags.markup import restructuredtext
@@ -9,6 +8,7 @@ from haystack.query import SearchQuerySet
 from blog.forms import EntryForm
 from blog.models import Post
 from blog.utils import segment
+
 
 def index(request):
     """

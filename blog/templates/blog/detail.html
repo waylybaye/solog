@@ -11,13 +11,17 @@
 
 {% block content %}
     <article>
-        <h2>{{ post.title }}</h2>
+        <header>
+          <h2>
+            <a href="{{ post.get_absolute_url }}"> {{ post.title }} </a>
+          </h2>
+        </header>
+
         <div>
             {% autoescape off %}
             {{ post.content_html }}
             {% endautoescape %}
         </div>
-        <aside> {{ post.created_at|date }} </aside>
     </article>
 
 {% endblock %}

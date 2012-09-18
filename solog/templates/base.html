@@ -10,8 +10,15 @@
 <body>
     {% load i18n chunks %}
     <section id="sl-container">
-        <div class='row-fluid'>
-            <div class='span2'>
+      <nav class='main-nav'>
+        <ul>
+          <li>
+            <a href="/">Index</a>
+          </li>
+          <li><a href="#">About</a></li>
+        </ul>
+        <div class="clear-fix"></div>
+      </nav>
                 <aside id='sl-sidebar'>
                     <div id="sl-sidebar-inner">
                         {% block sidebar %}
@@ -19,11 +26,10 @@
                         {% chunk 'sidebar' %}
                     </div>
                 </aside>
-            </div>
-            <div class="span10">
+
                 <section>
                     <header id='sl-page-header'>
-                    <div class='row-fluid'>
+                      <!--
                             <div class='span8'>
                                 <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span12"/>
                             </div>
@@ -41,7 +47,7 @@
                                 </span>
                             </div>
                         <div class='clear-fix'></div>
-                    </div>
+                      -->
                     </header>
 
                     <div id="sl-search-holder" class='hide'>
@@ -72,8 +78,6 @@
                         {% chunk 'content-footer' %}
                     </footer>
                 </section>
-            </div>
-        </div><!-- .row-fluid -->
     </section>
 
     <section class='modal hide' id='modal-login'>
@@ -99,6 +103,7 @@
     <script type="text/javascript" src="http://lib.sinaapp.com/js/jquery/1.7.2/jquery.min.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.history.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}js/prettify.js"></script>
     <script type="text/javascript">
         (function(window, undefined){
             var History = window.History,
@@ -164,6 +169,9 @@
                         $('#sl-search-holder').hide();
                     }
                 });
+
+                $('pre').addClass('prettyprint');
+                prettyPrint();
 
             })
 
