@@ -14,7 +14,7 @@ def index(request):
     """
     Index page
     """
-    posts = Post.objects.order_by('-id')[:10]
+    posts = Post.objects.order_by('-id')[:20]
     return render_to_response("index.html", {'posts': posts}, RequestContext(request))
 
 
