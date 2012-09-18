@@ -4,3 +4,4 @@ git+https://github.com/toastdriven/django-haystack.git@master#egg=django-haystac
 whoosh
 mmseg
 dj-database-url==0.2.1
+MySQL-python
