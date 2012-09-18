@@ -1,20 +1,55 @@
 {% extends 'base.html' %}
-{% load webdesign %}
+
+{% block title %} waylybaye 的博客 {% endblock title %}
 
 {% block content %}
-    {% for post in posts %}
-        <article>
-            <header>
-              <h2>
-                <a href="{{ post.get_absolute_url }}"> {{ post.title }} </a>
-              </h2>
-            </header>
-            <div>
-                {% autoescape off %}
-                {{ post.content_html }}
-                {% endautoescape %}
-            </div>
-            <aside> {{ post.created_at|date }} </aside>
-        </article>
-    {% endfor %}
+  <section class="profile">
+    <div class="row">
+      <div class="span2">
+        <a href='http://weibo.com/waylybaye'>
+          <img src='http://tp2.sinaimg.cn/1673953377/180/5630247817/1' /></a>
+      </div>
+      <div class="span10">
+        <h3>Baye Wayly</h3>
+        <br/>
+        <p>
+          自由职业者，全栈型程序员
+          <br>
+          HTML/CSS -> Javascript -> Python -> Database
+        </p>
+        <p>
+          <nav class='inline'>
+            <ul>
+              <li>
+                <a href='http://weibo.com/waylybaye' title="新浪微博">@waylybaye</a>
+              </li>
+              <li>
+                <a href="http://github.com/waylybaye" class="">Github</a>
+              </li>
+              <li>
+              </li>
+            </ul>
+          </nav>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="row-fluid">
+    <div class="span6">
+      <iframe width="450" height="650" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=3&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1673953377&verifier=1bf42c7d&dpc=1"></iframe>
+    </div>
+    <div class="span6">
+     <h3> 最新文章 </h3>
+      <nav class="recent-posts">
+        <ul>
+          {% for post in posts %}
+            <li>
+              <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </div>
 {% endblock %}

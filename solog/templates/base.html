@@ -1,15 +1,23 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
-    <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css"/>
-    {% block extra_head %}
-    {% endblock %}
-</head>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap.css"/>
+        <link rel="stylesheet" href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.css"/>
+        <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css"/>
+        {% block extra_head %}
+        {% endblock %}
+    </head>
 <body>
-    {% load i18n chunks %}
-    <section id="sl-container">
+  {% load i18n chunks %}
+
+  <section id="sl-container">
+    <div class="container">
       <nav class='main-nav'>
         <ul>
           <li>
@@ -19,66 +27,36 @@
         </ul>
         <div class="clear-fix"></div>
       </nav>
-                <aside id='sl-sidebar'>
-                    <div id="sl-sidebar-inner">
-                        {% block sidebar %}
-                        {% endblock %}
-                        {% chunk 'sidebar' %}
-                    </div>
-                </aside>
+    </div>
 
-                <section>
-                    <header id='sl-page-header'>
-                      <!--
-                            <div class='span8'>
-                                <input id="sl-search-bar" type="text" name="q" placeholder="{% trans 'Search' %}" class="span12"/>
-                            </div>
-                            <div class='span4'>
-                                <span id='sl-actions'>
-                                    {% if user.is_authenticated %}
-                                        <a class='btn btn-small ajaxable' href='{% url blog:post %}'>{% trans 'Post' %}</a>
-                                        <a class='btn btn-small btn-logout' href='{% url account:logout %}'>{% trans 'Logout' %}</a>
-                                    {% else %}
-                                        <a class='btn btn-small btn-show-login' href='{% url account:login %}'>{% trans 'Login' %}</a>
-                                    {% endif %}
+    <div class="container">
+      <section id="sl-content">
+          <div id='sl-ajax-loading'>
+              <img src='{{ STATIC_URL }}img/loading.gif' />
+          </div>
 
-                                    {% block page_actions %}
-                                    {% endblock %}
-                                </span>
-                            </div>
-                        <div class='clear-fix'></div>
-                      -->
-                    </header>
+          {% if messages %}
+              <div id='alert-messages'>
+                  {% for msg in messages %}
+                      <div class="alert fade in alert-{{ msg.tags }}">
+                          <a class="close" data-dismiss="alert" href='#'>x</a>
+                          <strong>{{ msg|safe }}</strong>
+                      </div>
+                  {% endfor %}
+              </div>
+          {% endif %}
 
-                    <div id="sl-search-holder" class='hide'>
-                    </div>
-                </section>
-                <section id="sl-content">
-                    <div id='sl-ajax-loading'>
-                        <img src='{{ STATIC_URL }}img/loading.gif' />
-                    </div>
-
-                    {% if messages %}
-                        <div id='alert-messages'>
-                            {% for msg in messages %}
-                                <div class="alert fade in alert-{{ msg.tags }}">
-                                    <a class="close" data-dismiss="alert" href='#'>x</a>
-                                    <strong>{{ msg|safe }}</strong>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-
-                    <header id='sl-content-header'>
-                        {% chunk 'content-header' %}
-                    </header>
-                    {% block content %}
-                    {% endblock %}
-                    <footer id='sl-content-footer'>
-                        {% chunk 'content-footer' %}
-                    </footer>
-                </section>
-    </section>
+          <header id='sl-content-header'>
+              {% chunk 'content-header' %}
+          </header>
+          {% block content %}
+          {% endblock %}
+          <footer id='sl-content-footer'>
+              {% chunk 'content-footer' %}
+          </footer>
+        </section>
+      </section>
+    </div>
 
     <section class='modal hide' id='modal-login'>
         <div class='modal-header'>
@@ -151,6 +129,9 @@
                                 $('#sl-content').html( $dom.find('#sl-content').html() );
                                 $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
                                 $('#sl-actions').html( $dom.find('#sl-actions').html() );
+
+                                $('pre').addClass('prettyprint');
+                                prettyPrint();
                             }
                             $('body').removeClass('loading');
                         },

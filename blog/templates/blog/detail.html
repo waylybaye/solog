@@ -22,6 +22,9 @@
             {{ post.content_html }}
             {% endautoescape %}
         </div>
+        <aside>
+          {{ post.created_at|date }}
+        </aside>
     </article>
 
 {% endblock %}
