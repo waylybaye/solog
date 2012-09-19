@@ -236,7 +236,7 @@ nav.even li{
     text-align: right;
 }
 h3.year{
-    text-align: center;
+    /*text-align: center;*/
     font-size: 20px;
     font-family: 'Ruthie', cursive, Georgia;
     color: #ba2636;
