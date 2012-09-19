@@ -2,6 +2,10 @@
 
 {% block title %} waylybaye 的博客 {% endblock title %}
 
+{% block extra_head %}
+  <link href='http://fonts.googleapis.com/css?family=Ruthie' rel='stylesheet' type='text/css'>
+{% endblock extra_head %}
+
 {% block content %}
   <section class="profile">
     <div class="row">
@@ -41,17 +45,21 @@
     <div class="span5">
       <iframe width="100%" height="700" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=700&fansRow=2&ptype=1&speed=0&skin=9&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1673953377&verifier=1bf42c7d&dpc=1"></iframe>
     </div>
-    <div class="span6 offset1">
-     <h3> 最新文章 </h3>
-      <nav class="recent-posts">
-        <ul>
-          {% for post in posts %}
-            <li>
-              <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
+
+    <div class="span6">
+      {% regroup posts by created_at|date:"Y" as posts_by_year %}
+      {% for posts in posts_by_year %}
+        <h3 class="year"> {{ posts.grouper }}</h3>
+        <nav class="posts {% cycle "even" "odd" %}">
+          <ul>
+            {% for post in posts.list %}
+              <li>
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </nav>
+      {% endfor %}
     </div>
   </div>
 {% endblock %}

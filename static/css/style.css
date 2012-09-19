@@ -201,16 +201,43 @@ section.profile p strong{
 }
 
 
-nav.recent-posts ul{
+nav.posts{
+    margin-bottom: 2em;
+}
+nav.posts ul{
     margin: 0;
 }
-nav.recent-posts li{
+nav.posts li{
     list-style-type: bengali;
     list-style-position: inside;
     color: gray;
     line-height: 2;
     font-size: 13px;
 }
-nav.recent-posts li a{
+nav.posts li a{
+    color: #333;
+}
+
+nav.posts li a:hover{
+    color: #ba2636;
+}
+nav.odd ul{
+    border-left: 1px solid #ddd;
+    margin-left: 50%;
+    padding-left: 10px;
+}
+
+nav.even ul{
+    border-right: 1px solid #ddd;
+    margin-right: 50%;
+    padding-right: 10px;
+}
+nav.even li{
+    text-align: right;
+}
+h3.year{
+    text-align: center;
+    font-size: 20px;
+    font-family: 'Ruthie', cursive, Georgia;
     color: #ba2636;
 }
