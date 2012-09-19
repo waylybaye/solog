@@ -244,4 +244,5 @@ h3.year{
 iframe.share_self{
     border: 1px solid #ddd;
     box-shadow: 1px 1px 0 #fff;
+    background: #fff;
 }
