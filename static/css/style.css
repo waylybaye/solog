@@ -65,6 +65,8 @@ article > header > h2{
     font-weight: normal;
     color: #ba2636;
     font-family: 'Lucida Grande', Helvetica, Arial, Verdana, sans-serif;
+    margin: 20px 0 10px;
+    text-align: center;
 }
 article > header > h2 a{
     color: #ba2636;
@@ -245,4 +247,15 @@ iframe.share_self{
     border: 1px solid #ddd;
     box-shadow: 1px 1px 0 #fff;
     background: #fff;
+}
+
+
+@media (min-width: 1200px) {
+    article{
+        margin: 0 10%;
+    }
+}
+@media (min-width: 768px) and (max-width: 979px) {
+    article{
+    }
 }

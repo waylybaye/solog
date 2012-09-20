@@ -127,9 +127,14 @@
                                 $dom = $(html)
                                 var title = $dom.find('title').text();
                                 document.title = title;
+
                                 $('#sl-content').html( $dom.find('#sl-content').html() );
                                 $('#sl-sidebar').html( $dom.find('#sl-sidebar').html() );
                                 $('#sl-actions').html( $dom.find('#sl-actions').html() );
+
+                                // if( relativeUrl ){
+                                  // $('section.profile').slideUp();
+                                // }
 
                                 $('pre').addClass('prettyprint');
                                 prettyPrint();
