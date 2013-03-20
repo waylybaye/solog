@@ -41,6 +41,8 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField()
 
+    filename = models.CharField(max_length=255, null=True, blank=True)
+
     content = models.TextField(default="")
     content_html = models.TextField(default="")
     content_format = models.CharField(max_length='30', choices=FORMAT_CHOICES)
