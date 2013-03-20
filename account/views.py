@@ -90,6 +90,8 @@ def dropbox_sync(request):
     for name in new_or_updated_files:
         update_post(request, api, name)
 
+    return redirect("/")
+
 
 def update_post(request, api, path):
     parent_dir, name = os.path.split(path)

@@ -25,6 +25,9 @@
         </div>
         <aside>
           {{ post.created_at|date }}
+          {% if not post.last_update_at == post.created_at %}
+            - 更新: {{ post.last_update_at|date }}
+          {% endif %}
         </aside>
     </article>
 
