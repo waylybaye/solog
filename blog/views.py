@@ -4,10 +4,8 @@ from django.contrib.markup.templatetags.markup import restructuredtext
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.template.context import RequestContext
 from django.template.defaultfilters import linebreaksbr
-from haystack.query import SearchQuerySet
 from blog.forms import EntryForm
 from blog.models import Post
-from blog.utils import segment
 
 
 def index(request):

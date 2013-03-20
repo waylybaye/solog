@@ -6,7 +6,7 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 relative_path = lambda path: os.path.join(PROJECT_ROOT, path)
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -138,7 +138,6 @@ INSTALLED_APPS = [
     'django.contrib.admindocs',
     'blog',
     'chunks',
-    'haystack',
 ]
 
 try:
@@ -174,13 +173,6 @@ LOGGING = {
             'propagate': True,
         },
     }
-}
-
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(PROJECT_ROOT, 'whoosh_index'),
-    },
 }
 
 try:

@@ -1,7 +1,4 @@
-django==1.4
+django==1.5
 django-chunks
-git+https://github.com/toastdriven/django-haystack.git@master#egg=django-haystack
-whoosh
-mmseg
 dj-database-url==0.2.1
 MySQL-python
