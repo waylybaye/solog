@@ -65,7 +65,9 @@ def dropbox_auth(request, callback=None):
 @login_required
 def dropbox_sync(request):
     sess = session.DropboxSession(settings.DROPBOX_KEY, settings.DROPBOX_SECRET, 'app_folder')
-    sess.set_token()
+    dropbox_token = DropboxToken.objects.get(user=request.user)
+    sess.set_token(dropbox_token.access_token, dropbox_token.access_token_secret)
+
     api = client.DropboxClient(sess)
     metas = api.metadata('/')
 
@@ -109,7 +111,7 @@ def update_post(request, api, path):
     post.last_update_at = last_modified
 
     md = markdown.Markdown(extensions=['meta'])
-    html = md.convert(content)
+    html = md.convert(content.decode('utf8'))
 
     post.title = md.Meta.get('title', ['Untitled'])[0]
     post.slug = md.Meta.get('slug', [slugify(name)])[0]
