@@ -4,3 +4,5 @@ dj-database-url==0.2.1
 MySQL-python
 python-dateutil==2.1
 dropbox==1.5.1
+South==0.7.6
+Markdown==2.3
