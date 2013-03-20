@@ -65,7 +65,7 @@
             <h3>{% trans 'Login' %}</h3>
         </div>
         <div class='modal-body'>
-            <form action='{% url account:login %}' method='post' id='login-form'>
+            <form action='{% url "account:login" %}' method='post' id='login-form'>
                 {% csrf_token %}
                 <p>
                 <input type="text" name='username'  placeholder='{% trans 'username' %}'/>
@@ -168,7 +168,7 @@
             });
 
             $('.btn-login').click(function(){
-                $.post('{% url account:login %}', $('#login-form').serialize(), function(data){
+                $.post('{% url "account:login" %}', $('#login-form').serialize(), function(data){
                    if( data.success ){
                        window.location.reload();
                    }else{
@@ -180,7 +180,7 @@
 
             $('#sl-search-bar').keyup(function(){
                 var q = $(this).val();
-                $('#sl-search-holder').load('{% url search %}?q=' + encodeURIComponent(q));
+                $('#sl-search-holder').load('{% url "search" %}?q=' + encodeURIComponent(q));
             });
         })(window);
     </script>
