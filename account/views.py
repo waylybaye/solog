@@ -122,9 +122,12 @@ def update_post(request, api, path):
     post.last_update_at = last_modified
 
     post.title = md.Meta.get('title', ['Untitled'])[0]
-    post.slug = md.Meta.get('slug', [slugify(name)])[0]
+    post.slug = md.Meta.get('slug', [slugify(name[:-3])])[0]
     post.content = content
     post.content_html = html
     post.content_format = 'markdown'
+
+    if 'published' in md.Meta and md.Meta.get('published').lower() == 'false':
+        post.is_published = False
     post.save()
 

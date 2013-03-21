@@ -47,6 +47,8 @@ class Post(models.Model):
     content_html = models.TextField(default="")
     content_format = models.CharField(max_length='30', choices=FORMAT_CHOICES)
 
+    is_published = models.BooleanField(default=True, db_index=True)
+
     created_at = models.DateTimeField(default=datetime.now)
     last_update_at = models.DateTimeField(auto_now=True)
 
