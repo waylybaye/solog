@@ -12,7 +12,7 @@ def index(request):
     """
     Index page
     """
-    query = Post.objects.filter(is_published=True).order_by('-id')
+    query = Post.objects.filter(is_published=True).order_by('-created_at')
     results = {}
     if query.count():
         first_post = Post.objects.order_by('id')[0]
@@ -90,4 +90,3 @@ def detail(request, slug_or_id):
 
     context = {'post': post}
     return render(request, "blog/detail.html", context)
-
