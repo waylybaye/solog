@@ -113,7 +113,7 @@ def update_post(request, api, path):
     html = md.convert(content.decode('utf8'))
 
     if 'date' in md.Meta:
-        post.created_at = parser.parse(md.Meta.get('date'))
+        post.created_at = parser.parse(md.Meta.get('date')[0])
     else:
         if not post.created_at:
             post.created_at = last_modified
