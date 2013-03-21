@@ -108,12 +108,18 @@ def update_post(request, api, path):
 
     last_modified = parser.parse(metadata['modified'])
 
-    if not post.created_at:
-        post.created_at = last_modified
-    post.last_update_at = last_modified
-
     md = markdown.Markdown(extensions=['meta'])
+
+    md.Meta.get('')
     html = md.convert(content.decode('utf8'))
+
+    if 'date' in md.Meta:
+        post.created_at = parser.parse(md.Meta.get('date'))
+    else:
+        if not post.created_at:
+            post.created_at = last_modified
+
+    post.last_update_at = last_modified
 
     post.title = md.Meta.get('title', ['Untitled'])[0]
     post.slug = md.Meta.get('slug', [slugify(name)])[0]
