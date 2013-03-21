@@ -12,19 +12,18 @@ def index(request):
     """
     Index page
     """
-
-    query = Post.objects.order_by('-id')
+    query = Post.objects.filter(is_published=True).order_by('-id')
     results = {}
     if query.count():
         first_post = Post.objects.order_by('id')[0]
         last_post = query[0]
         years = range(first_post.created_at.year, last_post.created_at.year + 1)
         years.sort(reverse=True)
+
         for year in years:
             results[year] = query.filter(created_at__year=year)
 
-    # return render_to_response("index.html", {'results': results}, RequestContext(request))
-    return render_to_response("index.html", {'posts': query}, RequestContext(request))
+    return render(request, "index.html", {'posts': query})
 
 
 def format_content(format, content):
