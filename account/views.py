@@ -125,5 +125,6 @@ def update_post(request, api, path):
     post.slug = md.Meta.get('slug', [slugify(name)])[0]
     post.content = content
     post.content_html = html
+    post.content_format = 'markdown'
     post.save()
 

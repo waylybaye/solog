@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.markup.templatetags.markup import restructuredtext
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.shortcuts import render_to_response, redirect, get_object_or_404, render
 from django.template.context import RequestContext
 from django.template.defaultfilters import linebreaksbr
 from blog.forms import EntryForm
@@ -81,15 +81,14 @@ def post(request, post_id=None):
     return render_to_response("blog/post.html", context, RequestContext(request))
 
 
-def detail(request, entry_id=None):
-    post = get_object_or_404(Post, id=entry_id)
+def detail(request, slug_or_id):
+    if slug_or_id.isdigit():
+        query = {'id': slug_or_id}
+    else:
+        query = {'slug': slug_or_id}
+
+    post = get_object_or_404(Post, **query)
+
     context = {'post': post}
-    return render_to_response("blog/detail.html", context, RequestContext(request))
+    return render(request, "blog/detail.html", context)
 
-
-def search(request):
-    q = request.GET.get('q')
-    q = segment(q)
-    queryset = SearchQuerySet()
-    results = queryset.autocomplete(content_auto=q) | queryset.filter(text=q)
-    return render_to_response('blog/search.html', {'results': results, 'q': q}, RequestContext(request))

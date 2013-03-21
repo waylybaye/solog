@@ -103,8 +103,6 @@
                     }
 
                     History.pushState(null, $(this).text(), href);
-                    $('#sl-search-bar').blur();
-                    $('#sl-search-holder').hide();
                     return false;
                 });
 
@@ -124,8 +122,9 @@
                                     .replace(/<(html|head|body|title|meta|script)([\s\>])/gi,'<div class="document-$1"$2')
                                     .replace(/<\/(html|head|body|title|meta|script)\>/gi,'</div>') ;
 
-                                $dom = $(html)
-                                var title = $dom.find('title').text();
+                                var $dom = $(html);
+                                var title = $dom.find('.document-title').text();
+                                console.log('title', title);
                                 document.title = title;
 
                                 $('#sl-content').html( $dom.find('#sl-content').html() );
@@ -149,18 +148,10 @@
                     });
                 });
 
-                $('#sl-search-bar').focus(function(){
-                    $('#sl-search-holder').show();
-                }).blur(function(){
-                    if( ! $('#sl-search-holder').is(':hover') ){
-                        $('#sl-search-holder').hide();
-                    }
-                });
-
                 $('pre').addClass('prettyprint');
                 prettyPrint();
 
-            })
+            });
 
             $('.btn-show-login').click(function(){
                 $('#modal-login').modal();
@@ -178,10 +169,6 @@
                 return false;
             });
 
-            $('#sl-search-bar').keyup(function(){
-                var q = $(this).val();
-                $('#sl-search-holder').load('{% url "search" %}?q=' + encodeURIComponent(q));
-            });
         })(window);
     </script>
     {% block extra_body %}
