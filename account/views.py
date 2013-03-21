@@ -110,7 +110,6 @@ def update_post(request, api, path):
 
     md = markdown.Markdown(extensions=['meta'])
 
-    md.Meta.get('')
     html = md.convert(content.decode('utf8'))
 
     if 'date' in md.Meta:
