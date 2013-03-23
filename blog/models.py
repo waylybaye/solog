@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.template.defaultfilters import urlencode
+from django.utils.http import urlquote
 from django.utils.translation import ugettext_lazy as _
 from datetime import datetime
 
@@ -57,7 +59,7 @@ class Post(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return "blog:detail", [self.slug or self.id]
+        return u"blog:detail", [self.slug or self.id]
 
 
 class Version(models.Model):
@@ -71,3 +73,15 @@ class Version(models.Model):
 
 class Images(models.Model):
     pass
+
+
+class SyncActivity(models.Model):
+    user = models.ForeignKey(User)
+    description = models.TextField()
+    post = models.ForeignKey(Post, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __unicode__(self):
+        return self.description
+
+

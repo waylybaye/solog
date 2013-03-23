@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -12,7 +13,7 @@ from slugify import slugify
 from account.models import DropboxToken
 from dateutil import parser
 from django.conf import settings
-from blog.models import Post
+from blog.models import Post, SyncActivity
 
 
 def render_json(**kwargs):
@@ -99,6 +100,13 @@ def dropbox_sync(request):
     for name in new_or_updated_files:
         update_post(request, api, name)
 
+
+    if not new_or_updated_files:
+        SyncActivity.objects.create(
+            user=user,
+            description="No changes found."
+        )
+
     return redirect("/")
 
 
@@ -134,7 +142,7 @@ def update_post(request, api, path):
     title = meta.get('title', [file_name])[0]
     slug = meta.get('slug', [slugify(title)])[0]
     not_published = 'published' in meta and meta.get('published').lower() == 'false'
-    created_date = parser.parse(meta.get('date')[0])
+    created_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
 
     if 'date' in meta:
         post.created_at = created_date
@@ -152,4 +160,9 @@ def update_post(request, api, path):
     post.is_published = not not_published
 
     post.save()
+
+    SyncActivity.objects.create(
+        user=post.user,
+        post=post,
+    )
 
