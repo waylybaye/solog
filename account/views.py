@@ -5,10 +5,10 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils import simplejson
-from django.utils.text import slugify
 from django.utils.translation import ugettext as _
 from dropbox import client, rest, session
 import markdown
+from slugify import slugify
 from account.models import DropboxToken
 from dateutil import parser
 from django.conf import settings
@@ -39,6 +39,9 @@ def account_logout(request):
 
 @login_required
 def dropbox_auth(request, callback=None):
+    """
+    Authorize dropbox
+    """
     sess = session.DropboxSession(settings.DROPBOX_KEY, settings.DROPBOX_SECRET, 'app_folder')
 
     if callback:
@@ -64,13 +67,19 @@ def dropbox_auth(request, callback=None):
 
 @login_required
 def dropbox_sync(request):
+    """
+    Sync posts from Dropbox folders
+
+    """
+    # TODO: support token param which allow user sync their posts through a url with no need to login
+    user = request.user
+
     sess = session.DropboxSession(settings.DROPBOX_KEY, settings.DROPBOX_SECRET, 'app_folder')
-    dropbox_token = DropboxToken.objects.get(user=request.user)
+    dropbox_token = DropboxToken.objects.get(user=user)
     sess.set_token(dropbox_token.access_token, dropbox_token.access_token_secret)
 
     api = client.DropboxClient(sess)
     metas = api.metadata('/')
-
 
     new_or_updated_files = []
 
@@ -79,7 +88,7 @@ def dropbox_sync(request):
         modified = parser.parse(content['modified'])
 
         try:
-            post = Post.objects.get(filename=name)
+            post = Post.objects.get(user=user, filename=name)
             if post.last_update_at < modified:
                 new_or_updated_files.append(name)
 
@@ -94,6 +103,14 @@ def dropbox_sync(request):
 
 
 def update_post(request, api, path):
+    """
+    Update or create a post from Dropbox file
+    Supported markdown Meta:
+        Title: Post title
+        Slug: url slug. default slugify(title), filename
+        Date: post created date
+        Published: not publish this post if Published is false
+    """
     parent_dir, name = os.path.split(path)
     try:
         post = Post.objects.get(filename=path)
@@ -109,24 +126,30 @@ def update_post(request, api, path):
     last_modified = parser.parse(metadata['modified'])
 
     md = markdown.Markdown(extensions=['meta'])
-
     html = md.convert(content.decode('utf8'))
 
-    if 'date' in md.Meta:
-        post.created_at = parser.parse(md.Meta.get('date')[0])
+    file_name = os.path.splitext(name)[0]
+    meta = md.Meta
+
+    title = meta.get('title', [file_name])[0]
+    slug = meta.get('slug', [slugify(title)])[0]
+    not_published = 'published' in meta and meta.get('published').lower() == 'false'
+    created_date = parser.parse(meta.get('date')[0])
+
+    if 'date' in meta:
+        post.created_at = created_date
     else:
         if not post.created_at:
             post.created_at = last_modified
 
     post.last_update_at = last_modified
 
-    post.title = md.Meta.get('title', ['Untitled'])[0]
-    post.slug = md.Meta.get('slug', [slugify(name[:-3])])[0]
+    post.title = title
+    post.slug = slug
     post.content = content
     post.content_html = html
     post.content_format = 'markdown'
+    post.is_published = not not_published
 
-    if 'published' in md.Meta and md.Meta.get('published').lower() == 'false':
-        post.is_published = False
     post.save()
 
