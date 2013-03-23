@@ -133,7 +133,9 @@ def update_post(request, api, path):
 
     last_modified = parser.parse(metadata['modified'])
 
-    md = markdown.Markdown(extensions=['meta'])
+    extensions = ['meta', 'fenced_code']
+    md = markdown.Markdown(extensions=extensions)
+
     html = md.convert(content.decode('utf8'))
 
     file_name = os.path.splitext(name)[0]
