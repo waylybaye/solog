@@ -142,6 +142,8 @@ INSTALLED_APPS = [
 
     'chunks',
     'south',
+
+    'django.contrib.humanize',
 ]
 
 try:

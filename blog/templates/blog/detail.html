@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n markup %}
+{% load humanize %}
 
 {% block title %}{{ post.title }}{% endblock %}
 
@@ -26,7 +27,7 @@
         <aside>
           {{ post.created_at|date }}
           {% if not post.last_update_at == post.created_at %}
-            - 更新: {{ post.last_update_at|date }}
+            ( 更新: {{ post.last_update_at|naturalday }} )
           {% endif %}
         </aside>
     </article>
