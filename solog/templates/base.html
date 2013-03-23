@@ -152,7 +152,13 @@
 
                 $('pre').addClass('prettyprint');
                 prettyPrint();
-
+                /*
+                $('pre').each(function(){
+                  var self = $(this);
+                  var $code = self.find('code');
+                  self.width( $code.width() + 30);
+                })
+                */
             });
 
             $('.btn-show-login').click(function(){

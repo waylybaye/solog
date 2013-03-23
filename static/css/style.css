@@ -84,6 +84,9 @@ article > header >h2 a:hover{
 
 article pre{
     text-shadow: none;
+  max-width: 600px;
+  /*display: inline-block;*/
+  /*min-width: 400px;*/
 }
 article ul{list-style-type: disc; }
 
