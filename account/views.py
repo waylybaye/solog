@@ -141,7 +141,7 @@ def update_post(request, api, path):
 
     title = meta.get('title', [file_name])[0]
     slug = meta.get('slug', [slugify(title)])[0]
-    not_published = 'published' in meta and meta.get('published').lower() == 'false'
+    not_published = 'published' in meta and meta.get('published')[0].lower() == 'false'
     created_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
 
     if 'date' in meta:
