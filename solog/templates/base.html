@@ -151,6 +151,14 @@
                  */
 
                 $('pre').addClass('prettyprint');
+
+                $('pre code').each(function(){
+                  var klass = $(this).attr('class');
+                  if( klass ){
+                    $(this).parent().addClass( klass.split(/\s/).map(function(cl){ return 'lang-' + cl;}).join(' '));
+                  }
+                });
+
                 prettyPrint();
                 /*
                 $('pre').each(function(){
