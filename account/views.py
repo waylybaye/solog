@@ -24,7 +24,6 @@ def account_login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
 
-    print username, password
     user = authenticate(username=username, password=password)
     if not user:
         return render_json(success=False, message=_(u"username or password was invalid."))
@@ -50,11 +49,12 @@ def dropbox_auth(request, callback=None):
         del request.session['request_token']
         request_token = session.OAuthToken(*request_token.split('&'))
         access_token = sess.obtain_access_token(request_token)
-        DropboxToken.objects.create(
-            user=request.user,
-            access_token=access_token.key,
-            access_token_secret=access_token.secret
-        )
+
+        dropbox_token, _ = DropboxToken.objects.get_or_create(user=request.user)
+        dropbox_token.access_token=access_token.key
+        dropbox_token.access_token_secret=access_token.secret
+        dropbox_token.save()
+
         return redirect(reverse("account:dropbox_sync"))
 
 

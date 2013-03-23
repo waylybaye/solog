@@ -8,6 +8,7 @@ class DropboxToken(models.Model):
     access_token = models.CharField(max_length=100)
     access_token_secret = models.CharField(max_length=100)
 
+    last_update_at = models.DateTimeField(auto_now=True, default=datetime.now)
     created_at = models.DateTimeField(default=datetime.now)
 
     def __unicode__(self):
