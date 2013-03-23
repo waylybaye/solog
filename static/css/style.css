@@ -29,7 +29,7 @@ body{ font-size:12px;
 
 #sl-content{
     color: black;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 #sl-actions .btn{ padding: 4px 10px; font-weight: bold; }
@@ -46,6 +46,12 @@ body.loading #sl-ajax-loading{ display: block; }
 body.loading #sl-content{ background: rgba(255, 255, 204, 0.6);}
 
 article h1, h2, h3, h4, h5{ font-size: 14px; margin: 3px 0 5px; font-weight: bold; line-height: 1;}
+
+article h3{
+  font-size: 16px;
+  margin: 0.7em 0 0.7em;
+}
+
 article{
     margin-bottom: 2em; line-height: 23px;
     text-shadow: 0 1px 0 #fff;
