@@ -5,8 +5,9 @@ NO database required, all file based.
 """
 import json
 import os
+from dropbox import session
 import mustache
-from bottle import route, run, Bottle, static_file, request
+from bottle import route, run, Bottle, static_file, request, redirect
 
 app = Bottle()
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -47,25 +48,29 @@ class Storage(object):
     def get(self, key):
         pass
 
+    def save(self):
+        pass
+
 
 class SettingStorage(Storage):
     def __init__(self, path):
         self.path = path
+        if os.path.isfile(path):
+            fp = open(path, 'rb')
+            self.cache = json.load(fp, encoding='utf8')
+            fp.close()
+        else:
+            self.cache = {}
 
     def get(self, key, default=None):
-        fp = open(self.path, 'r')
-        value = json.load(fp, encoding='utf8').get(key, default)
-        fp.close()
-        return value
+        return self.cache.get(key, default)
 
     def set(self, key, value):
-        fp = open(self.path, 'w+')
-        try:
-            object = json.load(fp, encoding='utf8')
-        except ValueError:
-            object = {}
-        object[key] = value
-        json.dump(object, fp)
+        self.cache[key] = value
+
+    def write(self):
+        fp = open(self.path, 'wb')
+        json.dump(self.cache, fp, indent=2)
         fp.close()
 
 
@@ -85,7 +90,40 @@ def dropbox_auth():
     """
     Get Dropbox oatuh tokens
     """
-    return ""
+    storage = SettingStorage(SETTINGS_FILE)
+    consumer_key = storage.get('dropbox:consumer_key')
+    consumer_secret = storage.get('dropbox:consumer_secret')
+    sess = session.DropboxSession(consumer_key, consumer_secret, 'app_folder')
+
+    request_token = sess.obtain_request_token()
+
+    callback = "%s://%s/dropbox/auth/callback" % (request.urlparts.scheme, request.urlparts.netloc)
+    http_response = redirect(callback)
+    http_response.set_cookie('request_token', '&'.join([request_token.key, request_token.secret]))
+    return http_response
+
+
+@app.route('/dropbox/auth/callback')
+def dropbox_callback():
+    """
+    Dropbox oauth callback
+    """
+    storage = SettingStorage(SETTINGS_FILE)
+    request_token = request.get_cookie('request_token')
+    if not request_token:
+        return "Oops, something is wrong ..."
+
+    consumer_key = storage.get('dropbox:consumer_key')
+    consumer_secret = storage.get('dropbox:consumer_secret')
+    sess = session.DropboxSession(consumer_key, consumer_secret, 'app_folder')
+    request_token = session.OAuthToken(*request_token.split('&'))
+    access_token = sess.obtain_access_token(request_token)
+
+    storage.set('dropbox:access_token_key', access_token.key)
+    storage.set('dropbox:access_token_secret', access_token.secret)
+    storage.write()
+
+    return redirect("/dropbox/sync")
 
 
 @app.route('/dropbox/sync')
@@ -107,9 +145,19 @@ def install():
     initialize solog application
     """
     if request.method == 'POST':
-        return "POST"
+        # let's trust the POST data
+        # assume the data has been validated by javascript
+        consumer_key = request.POST.get('consumer_key')
+        consumer_secret = request.POST.get('consumer_secret')
 
-    request.cookies.get()
+        storage = SettingStorage(SETTINGS_FILE)
+        storage.set('dropbox:consumer_key', consumer_key)
+        storage.set('dropbox:consumer_secret', consumer_secret)
+        storage.write()
+
+        # redirect to dropbox auth
+        return redirect('/dropbox/auth')
+
     context = {}
     return render_template("install.html", {})
 

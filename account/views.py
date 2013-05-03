@@ -52,11 +52,10 @@ def dropbox_auth(request, callback=None):
 
         dropbox_token, _ = DropboxToken.objects.get_or_create(user=request.user)
         dropbox_token.access_token=access_token.key
-        dropbox_token.access_token_secret=access_token.secret
+        dropbox_token.access_token_secret = access_token.secret
         dropbox_token.save()
 
         return redirect(reverse("account:dropbox_sync"))
-
 
     request_token = sess.obtain_request_token()
     request.session['request_token'] = "%s&%s" % (request_token.key, request_token.secret)
