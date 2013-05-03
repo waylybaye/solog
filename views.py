@@ -11,10 +11,17 @@ app = Bottle()
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 SETTINGS_FOLDER = os.path.join(PROJECT_ROOT, "settings")
 CACHE_FOLDER = os.path.join(PROJECT_ROOT, "cache")
+TEMPLATES_ROOT = os.path.join(PROJECT_ROOT, "templates")
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 
 
 def _is_installed():
     return os.path.exists(os.path.join(SETTINGS_FOLDER, "settings.json"))
+
+
+def render_template(name, context):
+    template = open(os.path.join(TEMPLATES_ROOT, name), 'r').read()
+    return mustache.render(template, context)
 
 
 class Storage(object):
@@ -38,7 +45,7 @@ class Storage(object):
         pass
 
 
-@route('/static/<filename:path>')
+@app.route('/static/<filename:path>')
 def static_files(filename):
     """
     Serving static files
@@ -46,7 +53,7 @@ def static_files(filename):
     .. note:
         only for development usage
     """
-    return static_file(filename, root='')
+    return static_file(filename, root=STATIC_ROOT)
 
 
 @app.route('/dropbox/auth')
@@ -78,7 +85,8 @@ def install():
     if request.method == 'POST':
         return "POST"
 
-    return "GET"
+    context = {}
+    return render_template("install.html", {})
 
 
 @app.route('/')
