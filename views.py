@@ -3,20 +3,23 @@ solog, yet another blog application
 
 NO database required, all file based.
 """
+import json
 import os
 import mustache
 from bottle import route, run, Bottle, static_file, request
 
 app = Bottle()
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-SETTINGS_FOLDER = os.path.join(PROJECT_ROOT, "settings")
 CACHE_FOLDER = os.path.join(PROJECT_ROOT, "cache")
+SETTINGS_ROOT = os.path.join(PROJECT_ROOT, "settings")
 TEMPLATES_ROOT = os.path.join(PROJECT_ROOT, "templates")
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 
+SETTINGS_FILE = os.path.join(SETTINGS_ROOT, "settings.json")
+
 
 def _is_installed():
-    return os.path.exists(os.path.join(SETTINGS_FOLDER, "settings.json"))
+    return os.path.exists(SETTINGS_FILE)
 
 
 def render_template(name, context):
@@ -43,6 +46,27 @@ class Storage(object):
 
     def get(self, key):
         pass
+
+
+class SettingStorage(Storage):
+    def __init__(self, path):
+        self.path = path
+
+    def get(self, key, default=None):
+        fp = open(self.path, 'r')
+        value = json.load(fp, encoding='utf8').get(key, default)
+        fp.close()
+        return value
+
+    def set(self, key, value):
+        fp = open(self.path, 'w+')
+        try:
+            object = json.load(fp, encoding='utf8')
+        except ValueError:
+            object = {}
+        object[key] = value
+        json.dump(object, fp)
+        fp.close()
 
 
 @app.route('/static/<filename:path>')
@@ -85,6 +109,7 @@ def install():
     if request.method == 'POST':
         return "POST"
 
+    request.cookies.get()
     context = {}
     return render_template("install.html", {})
 
