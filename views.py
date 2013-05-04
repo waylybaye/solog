@@ -192,7 +192,6 @@ def dropbox_sync():
             new_or_updated_files.append(name)
             continue
 
-        print "POST", post, post.last_update
         if post.last_update < modified:
             new_or_updated_files.append(name)
 
@@ -270,7 +269,7 @@ def update_post(request, api, path):
     title = meta.get('title', [file_name])[0]
     slug = meta.get('slug', [default_slug])[0]
     not_published = 'published' in meta and meta.get('published')[0].lower() == 'false'
-    created_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
+    publish_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
 
     # if 'date' in meta:
     #     post.created_at = created_date
@@ -282,6 +281,7 @@ def update_post(request, api, path):
     post.title = title
     post.slug = slug
     post.content = html
+    post.publish_date = publish_date
     post.is_published = not not_published
     db_save_post(conn, post)
 
@@ -434,7 +434,7 @@ def index():
 
     conn = sqlite3.connect(CACHE_DB_FILE)
     context = {
-        'posts': db_list_post(conn)
+        'posts': db_list_post(conn, order_by='-publish_date')
     }
     return render_template('index.html', context)
 
