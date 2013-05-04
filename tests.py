@@ -1,10 +1,12 @@
 from collections import namedtuple
+from datetime import datetime
 import json
 import os
+import sqlite3
 import mock
 import unittest
 from bottle import HTTPResponse, BaseRequest
-from views import SettingStorage
+from views import SettingStorage, db_initialize, db_save_post, db_get_post, db_list_post
 import tempfile
 import views
 
@@ -29,6 +31,30 @@ class StorageTest(unittest.TestCase):
         storage.set('test:dropbox:access_token', 'access_token')
         storage.write()
         self.assertEqual(json.load(open(path, 'r')).keys(), ['test:blog:title', 'test:dropbox:access_token'])
+
+
+class DbTest(unittest.TestCase):
+    def test_db(self):
+        conn = sqlite3.connect(':memory:')
+        db_initialize(conn)
+        results = conn.execute('SELECT name FROM sqlite_master WHERE type = "table"').fetchall()
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0][0], 'posts')
+
+        post = views.Post(id=None, title='Hello', content="<h1>Good<h1>", slug="hello-world", last_update=datetime.now())
+        db_save_post(conn, post)
+
+        saved_post = db_get_post(conn, 'hello-world')
+        self.assertEqual(post.title, 'Hello')
+
+        self.assertEqual(len(db_list_post(conn)), 1)
+        db_save_post(conn, post)
+        self.assertEqual(len(db_list_post(conn)), 2)
+
+        saved_post.title = "New Title"
+        db_save_post(conn, saved_post)
+        self.assertEqual(len(db_list_post(conn)), 2)
+        self.assertEqual(db_get_post(conn, 'hello-world').title, "New Title")
 
 
 class DropboxTest(unittest.TestCase):

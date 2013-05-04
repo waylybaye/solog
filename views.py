@@ -3,20 +3,23 @@ solog, yet another blog application
 
 NO database required, all file based.
 """
+from collections import namedtuple
 import json
 import os
+import sqlite3
 from dropbox import session
 import mustache
 from bottle import route, run, Bottle, static_file, request, redirect
 
 app = Bottle()
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-CACHE_FOLDER = os.path.join(PROJECT_ROOT, "cache")
+CACHE_ROOT = os.path.join(PROJECT_ROOT, "cache")
 SETTINGS_ROOT = os.path.join(PROJECT_ROOT, "settings")
 TEMPLATES_ROOT = os.path.join(PROJECT_ROOT, "templates")
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 
 SETTINGS_FILE = os.path.join(SETTINGS_ROOT, "settings.json")
+CACHE_DB_FILE = os.path.join(CACHE_ROOT, "data.db")
 
 
 def _is_installed():
@@ -140,6 +143,49 @@ def view_post(slug):
     pass
 
 
+# Post = namedtuple('Post', 'id title slug content last_update')
+class Post(object):
+    def __init__(self, id=None, title=None, slug=None, content=None, last_update=None):
+        self.id = id
+        self.title = title
+        self.slug = slug
+        self.content = content
+        self.last_update = last_update
+
+
+def db_initialize(conn):
+    # conn = sqlite3.connect(CACHE_DB_FILE)
+    conn.execute('''CREATE TABLE IF NOT EXISTS posts
+                (id integer primary key, title text, slug text, content text, last_update timestamp)''')
+
+
+def db_save_post(conn, post):
+    cursor = conn.cursor()
+    if post.id:
+        cursor.execute('''UPDATE posts SET title=:title, slug=:slug, content=:content, last_update=:last_update
+        ''', {'title': post.title, 'slug': post.slug, 'content': post.content, 'last_update': post.last_update})
+    else:
+        cursor.execute(
+            '''INSERT INTO posts(title, slug, content, last_update)
+                       VALUES(?, ?, ?, ?)''',
+            [post.title, post.slug, post.content, post.last_update])
+
+
+def db_list_post(conn):
+    cursor = conn.cursor()
+    cursor.execute('SELECT id,title,slug,content,last_update FROM posts')
+    results = cursor.fetchall()
+    return [Post(*result) for result in results]
+
+
+def db_get_post(conn, slug):
+    cursor = conn.cursor()
+    cursor.execute('SELECT id,title,slug,content,last_update FROM posts WHERE slug=:slug', {'slug': slug})
+    result = cursor.fetchone()
+    if result:
+        return Post(*result)
+
+
 def install():
     """
     initialize solog application
@@ -154,6 +200,12 @@ def install():
         storage.set('dropbox:consumer_key', consumer_key)
         storage.set('dropbox:consumer_secret', consumer_secret)
         storage.write()
+
+        # Create tables
+        conn = sqlite3.connect(CACHE_DB_FILE)
+        conn.execute("""CREATE TABLE posts
+                    (title text, slug text, content text, last_update timestamp) IF NOT EXISTS posts""")
+        conn.execute()
 
         # redirect to dropbox auth
         return redirect('/dropbox/auth')
