@@ -7,3 +7,4 @@ dropbox==1.5.1
 South==0.7.6
 Markdown==2.3
 unicode-slugify==0.1
+mustache==0.1.4
