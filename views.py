@@ -3,17 +3,17 @@ solog, yet another blog application
 
 NO database required, all file based.
 """
-from collections import namedtuple
+import time
 from datetime import datetime
 import json
 import os
 import re
 import sqlite3
 import uuid
-from dateutil import parser
+from dateutil import parser, tz
 from dropbox import session, client
+from dropbox.rest import ErrorResponse
 import markdown
-from markdown.extensions.headerid import slugify
 import mustache
 import unicodedata
 from bottle import route, run, Bottle, static_file, request, redirect, response, HTTPResponse
@@ -189,12 +189,42 @@ def dropbox_sync():
             new_or_updated_files.append(name)
             continue
 
+        print "POST", post, post.last_update
         if post.last_update < modified:
             new_or_updated_files.append(name)
 
     print "update ", new_or_updated_files
-    for name in new_or_updated_files:
+    for name in new_or_updated_files[:3]:
         update_post(request, api, name)
+
+    dropbox_last_modified = {}
+    try:
+        sync_metas = api.metadata('/conf')
+        for content in sync_metas['contents']:
+            path = content['path']
+            if content['is_dir']:
+                continue
+
+            filename = os.path.split(path)[1]
+            dropbox_last_modified[filename] = parser.parse(content['modified'])
+
+    except ErrorResponse, e:
+        if not e.status == 404:
+            raise
+
+    sync_files = [SETTINGS_FILE, CACHE_DB_FILE]
+    for sync_file in sync_files:
+        filename = os.path.split(sync_file)[1]
+
+        local_ctime = os.path.getctime(sync_file)
+        gmtime = time.gmtime(local_ctime)
+        ctime = datetime.fromtimestamp(time.mktime(gmtime))
+        ctime.replace(tzinfo=tz.tzutc())
+
+        if not filename in dropbox_last_modified or ctime > dropbox_last_modified[filename]:
+            fp = open(sync_file, 'rb')
+            api.put_file('/conf/%s' % filename, fp)
+            fp.close()
 
     return redirect("/")
 
@@ -208,13 +238,14 @@ def update_post(request, api, path):
         Date: post created date
         Published: not publish this post if Published is false
     """
-    parent_dir, name = os.path.split(path)
+    parent_dir, full_file_name = os.path.split(path)
     conn = sqlite3.connect(CACHE_DB_FILE)
 
     post = db_get_post(conn, filename=path)
     if not post:
         post = Post(filename=path)
 
+    print "UPDATE", path
     f, metadata = api.get_file_and_metadata(path)
     content = f.read()
 
@@ -225,9 +256,10 @@ def update_post(request, api, path):
 
     html = md.convert(content.decode('utf8'))
 
-    file_name = os.path.splitext(name)[0]
+    file_name = os.path.splitext(full_file_name)[0]
     meta = md.Meta
 
+    # copy from django slugify
     default_slug = unicodedata.normalize('NFKD', file_name).encode('ascii', 'ignore').decode('ascii')
     default_slug = re.sub('[^\w\s-]', '', default_slug).strip().lower()
     default_slug = re.sub('[-\s]+', '-', default_slug)
@@ -246,7 +278,7 @@ def update_post(request, api, path):
     post.last_update = last_modified
     post.title = title
     post.slug = slug
-    post.html = html
+    post.content = html
     post.is_published = not not_published
     db_save_post(conn, post)
 
@@ -264,13 +296,18 @@ def view_post(slug):
 
 # Post = namedtuple('Post', 'id title slug content last_update')
 class Post(object):
-    def __init__(self, id=None, title=None, slug=None, content=None, filename=None, last_update=None):
+    def __init__(self, id=None, title=None, slug=None, content=None,
+                 filename=None, publish_date=None, last_update=None):
         self.id = id
         self.title = title
         self.slug = slug
         self.content = content
+        self.publish_date = publish_date
         self.last_update = last_update
         self.filename = filename
+
+
+FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update']
 
 
 def db_initialize(conn):
@@ -278,44 +315,38 @@ def db_initialize(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS posts
                 (id integer primary key, title text, slug text,
                 content text, last_update timestamp,
+                publish_date timestamp,
                 filename text)''')
 
 
 def db_save_post(conn, post):
     cursor = conn.cursor()
     if post.id:
+        print "UPDATE posts SET %s" % ",".join(["%s=?" % field for field in FIELDS])
         cursor.execute(
-            '''UPDATE posts SET title=:title, slug=:slug,
-            content=:content, last_update=:last_update,
-            filename=:filename''',
-            {
-                'title': post.title,
-                'slug': post.slug,
-                'filename': post.filename,
-                'content': post.content,
-                'last_update': post.last_update})
+            "UPDATE posts SET %s" % ",".join(["%s=?" % field for field in FIELDS]),
+            [getattr(post, field) for field in FIELDS])
     else:
         cursor.execute(
-            '''INSERT INTO posts(title, slug, content, last_update)
-                       VALUES(?, ?, ?, ?)''',
-            [post.title, post.slug, post.content, post.last_update])
+            "INSERT INTO posts(%s) VALUES(%s)" % (",".join(FIELDS), ",".join("?"*len(FIELDS))),
+            [getattr(post, field) for field in FIELDS])
     conn.commit()
 
 
 def db_list_post(conn):
     cursor = conn.cursor()
-    cursor.execute('SELECT id,title,slug,content,last_update FROM posts')
+    cursor.execute('SELECT id,%s FROM posts ORDER BY id DESC' % (','.join(FIELDS)))
     results = cursor.fetchall()
-    return [Post(*result) for result in results]
+    return [Post(**dict((field, result[idx]) for idx, field in enumerate(["id"] + FIELDS))) for result in results]
 
 
 def db_get_post(conn, **kwargs):
     cursor = conn.cursor()
     query = " and ".join(['%s=:%s' % (key, key) for key in kwargs.keys()])
-    cursor.execute('SELECT id,title,slug,content,last_update FROM posts WHERE %s' % query, kwargs)
+    cursor.execute('SELECT id,%s FROM posts WHERE %s' % (','.join(FIELDS), query), kwargs)
     result = cursor.fetchone()
     if result:
-        return Post(*result)
+        return Post(**dict((field, result[idx]) for idx, field in enumerate(["id"] + FIELDS)))
 
 
 def install():
