@@ -37,7 +37,13 @@ def _is_installed():
 
 def render_template(name, context):
     template = open(os.path.join(TEMPLATES_ROOT, name), 'r').read()
-    return mustache.render(template, context)
+
+    partials = {
+        'header': open(os.path.join(TEMPLATES_ROOT, 'header.html')).read(),
+        'footer': open(os.path.join(TEMPLATES_ROOT, 'footer.html')).read(),
+    }
+
+    return mustache.render(template, context, partials=partials)
 
 
 class Storage(object):
@@ -391,7 +397,7 @@ def db_list_post(conn, order_by=None, **kwargs):
     >>> db_list_post(conn, is_published=1, tag="Python", order_by="-publish_date")
     """
     cursor = conn.cursor()
-    select_fields = ["id" + FIELDS]
+    select_fields = ["id"] + FIELDS
     sql = 'SELECT %s FROM posts' % (','.join(select_fields))
 
     # build
