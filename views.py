@@ -140,7 +140,13 @@ def dropbox_sync():
 
 @app.route('/post/<slug:re:[\w-]+>')
 def view_post(slug):
-    pass
+    conn = sqlite3.connect(CACHE_DB_FILE)
+    post = db_get_post(conn, slug)
+    context = {
+        'post': post,
+    }
+
+    return render_template('post.html', context)
 
 
 # Post = namedtuple('Post', 'id title slug content last_update')
@@ -169,6 +175,7 @@ def db_save_post(conn, post):
             '''INSERT INTO posts(title, slug, content, last_update)
                        VALUES(?, ?, ?, ?)''',
             [post.title, post.slug, post.content, post.last_update])
+    conn.commit()
 
 
 def db_list_post(conn):

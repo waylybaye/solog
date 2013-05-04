@@ -6,7 +6,7 @@ import sqlite3
 import mock
 import unittest
 from bottle import HTTPResponse, BaseRequest
-from views import SettingStorage, db_initialize, db_save_post, db_get_post, db_list_post
+from views import SettingStorage, db_initialize, db_save_post, db_get_post, db_list_post, Post
 import tempfile
 import views
 
@@ -55,6 +55,21 @@ class DbTest(unittest.TestCase):
         db_save_post(conn, saved_post)
         self.assertEqual(len(db_list_post(conn)), 2)
         self.assertEqual(db_get_post(conn, 'hello-world').title, "New Title")
+
+
+class AppTest(unittest.TestCase):
+    cache_file = tempfile.mktemp(".db")
+
+    def test_post_detail(self):
+        with mock.patch('views.CACHE_DB_FILE', self.cache_file):
+            conn = sqlite3.connect(self.cache_file)
+            post = Post(title="Hello", slug="hello", content="<h1>Hello</h1>", last_update=datetime.now())
+            db_initialize(conn)
+            db_save_post(conn, post)
+            response = views.view_post(post.slug)
+
+            self.assertTrue(post.title in response)
+            self.assertTrue(post.content in response)
 
 
 class DropboxTest(unittest.TestCase):
