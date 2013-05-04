@@ -1,3 +1,4 @@
+from sqlite3 import IntegrityError
 from collections import namedtuple
 from datetime import datetime
 import json
@@ -6,7 +7,7 @@ import sqlite3
 import mock
 import unittest
 from bottle import HTTPResponse, BaseRequest
-from views import SettingStorage, db_initialize, db_save_post, db_get_post, db_list_post, Post
+from views import SettingStorage, db_initialize, db_save_post, db_get_post, db_list_post, Post, db_ensure_unique
 import tempfile
 import views
 
@@ -48,9 +49,13 @@ class DbTest(unittest.TestCase):
         self.assertEqual(post.title, 'Hello')
         self.assertEqual(type(saved_post.last_update), datetime)
 
+        # Save twice
         self.assertEqual(len(db_list_post(conn)), 1)
+        self.assertRaises(IntegrityError, lambda: db_save_post(conn, post))
+        post.slug = db_ensure_unique(conn, 'slug', post.slug)
         db_save_post(conn, post)
         self.assertEqual(len(db_list_post(conn)), 2)
+        self.assertEqual(post.slug, "hello-world-2")
 
         saved_post.title = "New Title"
         db_save_post(conn, saved_post)

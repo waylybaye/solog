@@ -279,7 +279,7 @@ def update_post(request, api, path):
 
     post.last_update = last_modified
     post.title = title
-    post.slug = slug
+    post.slug = db_ensure_unique(conn, 'slug', slug)
     post.content = html
     post.publish_date = publish_date
     post.is_published = not not_published
@@ -348,7 +348,16 @@ def db_initialize(conn):
                 (id INTEGER PRIMARY KEY, title TEXT, slug TEXT,
                 content TEXT, last_update TIMESTAMP,
                 publish_date timestamp,
-                filename text, is_published integer)''')
+                filename text, is_published integer);''')
+
+    sql_create_index = [
+        "CREATE INDEX `index_publish_date` ON `posts`(`publish_date` DESC);",
+        "CREATE UNIQUE INDEX `unque_slug` ON `posts`(`slug` ASC);"]
+
+    for sql in sql_create_index:
+        conn.execute(sql)
+
+    conn.commit()
 
 
 def db_save_post(conn, post):
@@ -383,6 +392,18 @@ def db_list_post(conn, order_by=None, **kwargs):
     cursor.execute(sql, kwargs)
     results = cursor.fetchall()
     return [Post(**dict((field, result[idx]) for idx, field in enumerate(["id"] + FIELDS))) for result in results]
+
+
+def db_ensure_unique(conn, field, value):
+    if not db_get_post(conn, **{field: value}):
+        return value
+
+    for x in xrange(2, 10000):
+        slug = "%s-%s" % (value, x)
+        if not db_get_post(conn, **{field: slug}):
+            return slug
+
+    raise Exception("Oops, I'm beat.")
 
 
 def db_get_post(conn, **kwargs):
