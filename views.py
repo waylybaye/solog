@@ -351,8 +351,8 @@ def db_initialize(conn):
                 filename text, is_published integer);''')
 
     sql_create_index = [
-        "CREATE INDEX `index_publish_date` ON `posts`(`publish_date` DESC);",
-        "CREATE UNIQUE INDEX `unque_slug` ON `posts`(`slug` ASC);"]
+        "CREATE INDEX `index_publish_date_is_published` ON `posts`(`is_published`, `publish_date` DESC);",
+        "CREATE UNIQUE INDEX `unique_slug` ON `posts`(`slug` ASC);"]
 
     for sql in sql_create_index:
         conn.execute(sql)
