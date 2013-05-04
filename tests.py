@@ -65,6 +65,12 @@ class DbTest(unittest.TestCase):
         self.assertEqual(len(db_list_post(conn)), 2)
         self.assertEqual(len(db_list_post(conn, is_published=1)), 1)
 
+        # test db_list_post order by
+        rs = db_list_post(conn, order_by="id")
+        self.assertEqual(rs[0].id, 1)
+        rs = db_list_post(conn, order_by="-id")
+        self.assertEqual(rs[0].id, 2)
+
 
 class AppTest(unittest.TestCase):
     cache_file = tempfile.mktemp(".db")
