@@ -1,5 +1,9 @@
 {{# posts }}
-  <h2>{{ title }}</h2>
+  <h2>
+    <a href="/post/{{ post.slug }}">
+      {{ title }}
+    </a>
+  </h2>
   <p>
     {{ filename }}
   </p>

@@ -300,29 +300,39 @@ def view_post(slug):
 # Post = namedtuple('Post', 'id title slug content last_update')
 class Post(object):
     def __init__(self, id=None, title=None, slug=None, content=None,
-                 filename=None, publish_date=None, last_update=None):
-        self.id = id
-        self.title = title
-        self.slug = slug
-        self.content = content
+                 filename=None, is_published=None, publish_date=None,
+                 last_update=None):
+
+        if is_published is True:
+            is_published = 1
+        elif is_published is False:
+            is_published = 0
+
         if isinstance(publish_date, basestring):
             publish_date = parser.parse(publish_date)
         if isinstance(last_update, basestring):
             last_update = parser.parse(last_update)
+
+        self.id = id
+        self.title = title
+        self.slug = slug
+        self.content = content
+
         self.publish_date = publish_date
         self.last_update = last_update
         self.filename = filename
+        self.is_published = is_published
 
 
-FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update']
+FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update', 'is_published']
 
 
 def db_initialize(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS posts
-                (id integer primary key, title text, slug text,
-                content text, last_update timestamp,
+                (id INTEGER PRIMARY KEY, title TEXT, slug TEXT,
+                content TEXT, last_update TIMESTAMP,
                 publish_date timestamp,
-                filename text)''')
+                filename text, is_published integer)''')
 
 
 def db_save_post(conn, post):
