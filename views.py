@@ -7,18 +7,23 @@ from collections import namedtuple
 from datetime import datetime
 import json
 import os
+import re
 import sqlite3
+import uuid
 from dateutil import parser
 from dropbox import session, client
 import markdown
 from markdown.extensions.headerid import slugify
 import mustache
-from bottle import route, run, Bottle, static_file, request, redirect
+import unicodedata
+from bottle import route, run, Bottle, static_file, request, redirect, response, HTTPResponse
 
 app = Bottle()
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
-CACHE_ROOT = os.path.join(PROJECT_ROOT, "cache")
-SETTINGS_ROOT = os.path.join(PROJECT_ROOT, "settings")
+CONF_ROOT = os.path.join(PROJECT_ROOT, "conf")
+CACHE_ROOT = CONF_ROOT
+SETTINGS_ROOT = CONF_ROOT
+
 TEMPLATES_ROOT = os.path.join(PROJECT_ROOT, "templates")
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 
@@ -105,9 +110,12 @@ def dropbox_auth():
     request_token = sess.obtain_request_token()
 
     callback = "%s://%s/dropbox/auth/callback" % (request.urlparts.scheme, request.urlparts.netloc)
-    http_response = redirect(callback)
-    http_response.set_cookie('request_token', '&'.join([request_token.key, request_token.secret]))
-    return http_response
+    auth_url = sess.build_authorize_url(request_token, callback)
+    # response.set_cookie('request_token', '&'.join([request_token.key, request_token.secret]))
+
+    resp = HTTPResponse("", status=302, Location=auth_url)
+    resp.set_cookie('request_token', '&'.join([request_token.key, request_token.secret]))
+    return resp
 
 
 @app.route('/dropbox/auth/callback')
@@ -128,9 +136,14 @@ def dropbox_callback():
 
     storage.set('dropbox:access_token_key', access_token.key)
     storage.set('dropbox:access_token_secret', access_token.secret)
+
+    # save session
+    token = str(uuid.uuid4())
+    storage.set('session', token)
     storage.write()
 
-    return redirect("/dropbox/sync")
+    response.set_cookie('session', token, max_age=3600*24*10)
+    redirect("/dropbox/sync?session=" + token)
 
 
 @app.route('/dropbox/sync')
@@ -149,11 +162,15 @@ def dropbox_sync():
     access_token_key = storage.get('dropbox:access_token_key')
     access_token_secret = storage.get('dropbox:access_token_secret')
 
+    session_token = storage.get('session')
+    if not request.get_cookie('session') == session_token and not request.GET.get('session') == session_token:
+        return "Oops, who are you?"
+
     if not consumer_key or not consumer_secret:
-        return "Oops, do you install me?"
+        return "Oops, did you install me?"
 
     if not access_token_key or not access_token_secret:
-        return "Oops, do you authenticated?"
+        return "Oops, did you authenticate?"
 
     sess = session.DropboxSession(consumer_key, consumer_secret, 'app_folder')
     sess.set_token(access_token_key, access_token_secret)
@@ -175,6 +192,7 @@ def dropbox_sync():
         if post.last_update < modified:
             new_or_updated_files.append(name)
 
+    print "update ", new_or_updated_files
     for name in new_or_updated_files:
         update_post(request, api, name)
 
@@ -191,13 +209,11 @@ def update_post(request, api, path):
         Published: not publish this post if Published is false
     """
     parent_dir, name = os.path.split(path)
-    try:
-        post = Post.objects.get(filename=path)
-    except Post.DoesNotExist:
-        post = Post(
-            user=request.user,
-            filename=path
-        )
+    conn = sqlite3.connect(CACHE_DB_FILE)
+
+    post = db_get_post(conn, filename=path)
+    if not post:
+        post = Post(filename=path)
 
     f, metadata = api.get_file_and_metadata(path)
     content = f.read()
@@ -212,27 +228,27 @@ def update_post(request, api, path):
     file_name = os.path.splitext(name)[0]
     meta = md.Meta
 
+    default_slug = unicodedata.normalize('NFKD', file_name).encode('ascii', 'ignore').decode('ascii')
+    default_slug = re.sub('[^\w\s-]', '', default_slug).strip().lower()
+    default_slug = re.sub('[-\s]+', '-', default_slug)
+
     title = meta.get('title', [file_name])[0]
-    slug = meta.get('slug', [slugify(title)])[0]
+    slug = meta.get('slug', [default_slug])[0]
     not_published = 'published' in meta and meta.get('published')[0].lower() == 'false'
     created_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
 
-    if 'date' in meta:
-        post.created_at = created_date
-    else:
-        if not post.created_at:
-            post.created_at = last_modified
+    # if 'date' in meta:
+    #     post.created_at = created_date
+    # else:
+    #     if not post.created_at:
+    #         post.created_at = last_modified
 
-    post.last_update_at = last_modified
-
+    post.last_update = last_modified
     post.title = title
     post.slug = slug
-    post.content = content
-    post.content_html = html
-    post.content_format = 'markdown'
+    post.html = html
     post.is_published = not not_published
-
-    post.save()
+    db_save_post(conn, post)
 
 
 @app.route('/post/<slug:re:[\w-]+>')
@@ -248,25 +264,36 @@ def view_post(slug):
 
 # Post = namedtuple('Post', 'id title slug content last_update')
 class Post(object):
-    def __init__(self, id=None, title=None, slug=None, content=None, last_update=None):
+    def __init__(self, id=None, title=None, slug=None, content=None, filename=None, last_update=None):
         self.id = id
         self.title = title
         self.slug = slug
         self.content = content
         self.last_update = last_update
+        self.filename = filename
 
 
 def db_initialize(conn):
     # conn = sqlite3.connect(CACHE_DB_FILE)
     conn.execute('''CREATE TABLE IF NOT EXISTS posts
-                (id integer primary key, title text, slug text, content text, last_update timestamp)''')
+                (id integer primary key, title text, slug text,
+                content text, last_update timestamp,
+                filename text)''')
 
 
 def db_save_post(conn, post):
     cursor = conn.cursor()
     if post.id:
-        cursor.execute('''UPDATE posts SET title=:title, slug=:slug, content=:content, last_update=:last_update
-        ''', {'title': post.title, 'slug': post.slug, 'content': post.content, 'last_update': post.last_update})
+        cursor.execute(
+            '''UPDATE posts SET title=:title, slug=:slug,
+            content=:content, last_update=:last_update,
+            filename=:filename''',
+            {
+                'title': post.title,
+                'slug': post.slug,
+                'filename': post.filename,
+                'content': post.content,
+                'last_update': post.last_update})
     else:
         cursor.execute(
             '''INSERT INTO posts(title, slug, content, last_update)
@@ -296,6 +323,11 @@ def install():
     initialize solog application
     """
     if request.method == 'POST':
+        dirs = [CONF_ROOT, SETTINGS_ROOT, CACHE_ROOT]
+        for dir in dirs:
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+
         # let's trust the POST data
         # assume the data has been validated by javascript
         consumer_key = request.POST.get('consumer_key')
@@ -308,18 +340,15 @@ def install():
 
         # Create tables
         conn = sqlite3.connect(CACHE_DB_FILE)
-        conn.execute("""CREATE TABLE posts
-                    (title text, slug text, content text, last_update timestamp) IF NOT EXISTS posts""")
-        conn.execute()
+        db_initialize(conn)
 
         # redirect to dropbox auth
         return redirect('/dropbox/auth')
 
-    context = {}
     return render_template("install.html", {})
 
 
-@app.route('/')
+@app.route('/', method=['GET', 'POST'])
 def index():
     """
     Blog index page
@@ -327,7 +356,11 @@ def index():
     if not _is_installed():
         return install()
 
-    return mustache.render()
+    conn = sqlite3.connect(CACHE_DB_FILE)
+    context = {
+        'posts': db_list_post(conn)
+    }
+    return render_template('index.html', context)
 
 
 if __name__ == '__main__':

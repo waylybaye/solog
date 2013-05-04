@@ -2,20 +2,27 @@
 
 <head>
   <title>Install</title>
-  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
 </head>
-<body>
-  <h1>Install Solog</h1>
 
-  <h2>Connect Dropbox</h2>
-  <label for="">
-    <input type="radio" name="auth_type" value="solog" checked />
-    使用 Solog App
-  </label>
+<body class="install">
+  <section id="main">
+    <h1>Install Solog</h1>
 
-  <label for="">
-    <input type="radio" name="auth_type" value="solog" checked />
-    使用自己的App
-  </label>
+    <form action="" method="post">
+
+      <p>
+        <label for="id_consumer_key">Dropbox App Key:</label>
+        <input type="text" name="consumer_key" id="id_consumer_key"/>
+      </p>
+
+      <p>
+        <label for="id_consumer_secret">Dropbox App Secret:</label>
+        <input type="text" name="consumer_secret" id="id_consumer_secret"/>
+      </p>
+
+      <button>next</button>
+    </form>
+  </section>
 </body>
 </html>
