@@ -269,17 +269,13 @@ def update_post(request, api, path):
     title = meta.get('title', [file_name])[0]
     slug = meta.get('slug', [default_slug])[0]
     not_published = 'published' in meta and meta.get('published')[0].lower() == 'false'
-    publish_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
-
-    # if 'date' in meta:
-    #     post.created_at = created_date
-    # else:
-    #     if not post.created_at:
-    #         post.created_at = last_modified
+    publish_date = parser.parse(meta.get('date')[0]) if 'date' in meta else last_modified
 
     post.last_update = last_modified
     post.title = title
-    post.slug = db_ensure_unique(conn, 'slug', slug)
+    if not post.id:
+        # don't change existing post.slug
+        post.slug = db_ensure_unique(conn, 'slug', slug)
     post.content = html
     post.publish_date = publish_date
     post.is_published = not not_published
@@ -288,6 +284,9 @@ def update_post(request, api, path):
 
 @app.route('/post/<slug:re:[\w-]+>')
 def view_post(slug):
+    """
+    return post detail page
+    """
     conn = sqlite3.connect(CACHE_DB_FILE)
     post = db_get_post(conn, slug=slug)
     context = {
@@ -344,6 +343,9 @@ FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update',
 
 
 def db_initialize(conn):
+    """
+    Create table schema and indexes
+    """
     conn.execute('''CREATE TABLE IF NOT EXISTS posts
                 (id INTEGER PRIMARY KEY, title TEXT, slug TEXT,
                 content TEXT, last_update TIMESTAMP,
@@ -361,6 +363,11 @@ def db_initialize(conn):
 
 
 def db_save_post(conn, post):
+    """
+    Save a `Post` instance to database.
+
+    `INSERT` to database if not post.id, `UPDATE` otherwise
+    """
     cursor = conn.cursor()
     if post.id:
         cursor.execute(
@@ -374,12 +381,24 @@ def db_save_post(conn, post):
 
 
 def db_list_post(conn, order_by=None, **kwargs):
+    """
+    get a list of all post
+
+    :param order_by: order by `field_name` ASC or `-field_name` for DESC order
+    :param kwargs: perform field filter
+
+    >>> conn = sqlite3.connect(':memory:')
+    >>> db_list_post(conn, is_published=1, tag="Python", order_by="-publish_date")
+    """
     cursor = conn.cursor()
-    # cursor.execute('SELECT id,%s FROM posts ORDER BY id DESC' % (','.join(FIELDS)))
-    sql = 'SELECT id,%s FROM posts' % (','.join(FIELDS))
+    select_fields = ["id" + FIELDS]
+    sql = 'SELECT %s FROM posts' % (','.join(select_fields))
+
+    # build
     if kwargs:
         query = " and ".join(['%s=:%s' % (key, key) for key in kwargs.keys()])
         sql += " WHERE " + query
+
     if order_by and order_by.strip():
         if order_by[0] == '-':
             field = order_by[1:]
@@ -391,10 +410,20 @@ def db_list_post(conn, order_by=None, **kwargs):
 
     cursor.execute(sql, kwargs)
     results = cursor.fetchall()
-    return [Post(**dict((field, result[idx]) for idx, field in enumerate(["id"] + FIELDS))) for result in results]
+    return [Post(**dict((field, result[idx]) for idx, field in enumerate(select_fields))) for result in results]
 
 
 def db_ensure_unique(conn, field, value):
+    """
+    ensure a `field` value is unique or return a unique value based on `value`
+
+    >>> conn = sqlite3.connect(':memory:')
+    >>> conn.execute("INSERT INTO posts(slug) VALUES('hello')")
+    >>> db_ensure_unique(conn, 'slug', 'hello-world')
+    'hello-world'
+    >>> db_ensure_unique(conn, 'slug', 'hello')
+    'hello-2'
+    """
     if not db_get_post(conn, **{field: value}):
         return value
 
