@@ -57,6 +57,14 @@ class DbTest(unittest.TestCase):
         self.assertEqual(len(db_list_post(conn)), 2)
         self.assertEqual(db_get_post(conn, slug='hello-world').title, "New Title")
 
+        # test db_list_post with filters
+        self.assertEqual(len(db_list_post(conn, is_published=1)), 0)
+
+        saved_post.is_published = True
+        db_save_post(conn, saved_post)
+        self.assertEqual(len(db_list_post(conn)), 2)
+        self.assertEqual(len(db_list_post(conn, is_published=1)), 1)
+
 
 class AppTest(unittest.TestCase):
     cache_file = tempfile.mktemp(".db")
@@ -87,16 +95,17 @@ class DropboxTest(unittest.TestCase):
     @mock.patch('dropbox.session.DropboxSession')
     def test_auth(self, MockSession):
         with mock.patch('views.SETTINGS_FILE', self.settings_file):
-            self.assertRaises(HTTPResponse, lambda: views.dropbox_auth())
-
+            AccessToken = namedtuple('AccessToken', "key secret")
             sess = MockSession()
+            sess.obtain_request_token.return_value = AccessToken(key="key", secret="secret")
+
+            http_response = views.dropbox_auth()
+            self.assertEqual(http_response.status_code, 302)
 
             self.assertTrue(sess.obtain_request_token.called)
             self.assertEqual(views.dropbox_callback(), 'Oops, something is wrong ...')
 
             with mock.patch.object(BaseRequest, 'get_cookie', lambda *args: "key&secret"):
-                AccessToken = namedtuple('AccessToken', "key secret")
-                # mock = mock.MagicMock(return_value=AccessToken(key="key", secret="secret"))
                 sess.obtain_access_token.return_value = AccessToken(key="key", secret="secret")
 
                 # should redirect to /dropbox/sync

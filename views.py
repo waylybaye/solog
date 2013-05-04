@@ -303,11 +303,6 @@ class Post(object):
                  filename=None, is_published=None, publish_date=None,
                  last_update=None):
 
-        if is_published is True:
-            is_published = 1
-        elif is_published is False:
-            is_published = 0
-
         if isinstance(publish_date, basestring):
             publish_date = parser.parse(publish_date)
         if isinstance(last_update, basestring):
@@ -322,6 +317,27 @@ class Post(object):
         self.last_update = last_update
         self.filename = filename
         self.is_published = is_published
+
+    def _get_is_published(self):
+        return self._is_published
+
+    def _set_is_published(self, is_published):
+        if is_published is True:
+            is_published = 1
+        elif is_published in [False, None]:
+            is_published = 0
+        else:
+            assert is_published in [1, 0]
+
+        self._is_published = is_published
+
+    is_published = property(_get_is_published, _set_is_published)
+
+    def __repr__(self):
+        return u"<Post: %s>" % unicode(self)
+
+    def __unicode__(self):
+        return self.title
 
 
 FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update', 'is_published']
@@ -339,8 +355,8 @@ def db_save_post(conn, post):
     cursor = conn.cursor()
     if post.id:
         cursor.execute(
-            "UPDATE posts SET %s" % ",".join(["%s=?" % field for field in FIELDS]),
-            [getattr(post, field) for field in FIELDS])
+            "UPDATE posts SET %s WHERE id=?" % ",".join(["%s=?" % field for field in FIELDS]),
+            [getattr(post, field) for field in FIELDS + ["id"]])
     else:
         cursor.execute(
             "INSERT INTO posts(%s) VALUES(%s)" % (",".join(FIELDS), ",".join("?"*len(FIELDS))),
@@ -348,9 +364,23 @@ def db_save_post(conn, post):
     conn.commit()
 
 
-def db_list_post(conn):
+def db_list_post(conn, order_by=None, **kwargs):
     cursor = conn.cursor()
-    cursor.execute('SELECT id,%s FROM posts ORDER BY id DESC' % (','.join(FIELDS)))
+    # cursor.execute('SELECT id,%s FROM posts ORDER BY id DESC' % (','.join(FIELDS)))
+    sql = 'SELECT id,%s FROM posts' % (','.join(FIELDS))
+    if kwargs:
+        query = " and ".join(['%s=:%s' % (key, key) for key in kwargs.keys()])
+        sql += " WHERE " + query
+    if order_by and order_by.strip():
+        if order_by[0] == '-':
+            field = order_by[1:]
+            order = "DESC"
+        else:
+            field = order_by
+            order = ""
+        sql += " ORDER BY %s %s" % (field, order)
+
+    cursor.execute(sql, kwargs)
     results = cursor.fetchall()
     return [Post(**dict((field, result[idx]) for idx, field in enumerate(["id"] + FIELDS))) for result in results]
 
