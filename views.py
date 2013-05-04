@@ -4,10 +4,14 @@ solog, yet another blog application
 NO database required, all file based.
 """
 from collections import namedtuple
+from datetime import datetime
 import json
 import os
 import sqlite3
-from dropbox import session
+from dateutil import parser
+from dropbox import session, client
+import markdown
+from markdown.extensions.headerid import slugify
 import mustache
 from bottle import route, run, Bottle, static_file, request, redirect
 
@@ -137,11 +141,104 @@ def dropbox_sync():
     * List Dropbox blog folder and convert them to html.
     * Save local settings file to Dropbox
     """
+    conn = sqlite3.connect(CACHE_DB_FILE)
+    storage = SettingStorage(SETTINGS_FILE)
+
+    consumer_key = storage.get('dropbox:consumer_key')
+    consumer_secret = storage.get('dropbox:consumer_secret')
+    access_token_key = storage.get('dropbox:access_token_key')
+    access_token_secret = storage.get('dropbox:access_token_secret')
+
+    if not consumer_key or not consumer_secret:
+        return "Oops, do you install me?"
+
+    if not access_token_key or not access_token_secret:
+        return "Oops, do you authenticated?"
+
+    sess = session.DropboxSession(consumer_key, consumer_secret, 'app_folder')
+    sess.set_token(access_token_key, access_token_secret)
+
+    api = client.DropboxClient(sess)
+    metas = api.metadata('/')
+
+    new_or_updated_files = []
+
+    for content in metas['contents']:
+        name = content['path']
+        modified = parser.parse(content['modified'])
+
+        post = db_get_post(conn, filename=name)
+        if not post:
+            new_or_updated_files.append(name)
+            continue
+
+        if post.last_update < modified:
+            new_or_updated_files.append(name)
+
+    for name in new_or_updated_files:
+        update_post(request, api, name)
+
+    return redirect("/")
+
+
+def update_post(request, api, path):
+    """
+    Update or create a post from Dropbox file
+    Supported markdown Meta:
+        Title: Post title
+        Slug: url slug. default slugify(title), filename
+        Date: post created date
+        Published: not publish this post if Published is false
+    """
+    parent_dir, name = os.path.split(path)
+    try:
+        post = Post.objects.get(filename=path)
+    except Post.DoesNotExist:
+        post = Post(
+            user=request.user,
+            filename=path
+        )
+
+    f, metadata = api.get_file_and_metadata(path)
+    content = f.read()
+
+    last_modified = parser.parse(metadata['modified'])
+
+    extensions = ['meta', 'fenced_code']
+    md = markdown.Markdown(extensions=extensions)
+
+    html = md.convert(content.decode('utf8'))
+
+    file_name = os.path.splitext(name)[0]
+    meta = md.Meta
+
+    title = meta.get('title', [file_name])[0]
+    slug = meta.get('slug', [slugify(title)])[0]
+    not_published = 'published' in meta and meta.get('published')[0].lower() == 'false'
+    created_date = parser.parse(meta.get('date')[0]) if 'date' in meta else datetime.now()
+
+    if 'date' in meta:
+        post.created_at = created_date
+    else:
+        if not post.created_at:
+            post.created_at = last_modified
+
+    post.last_update_at = last_modified
+
+    post.title = title
+    post.slug = slug
+    post.content = content
+    post.content_html = html
+    post.content_format = 'markdown'
+    post.is_published = not not_published
+
+    post.save()
+
 
 @app.route('/post/<slug:re:[\w-]+>')
 def view_post(slug):
     conn = sqlite3.connect(CACHE_DB_FILE)
-    post = db_get_post(conn, slug)
+    post = db_get_post(conn, slug=slug)
     context = {
         'post': post,
     }
@@ -185,9 +282,10 @@ def db_list_post(conn):
     return [Post(*result) for result in results]
 
 
-def db_get_post(conn, slug):
+def db_get_post(conn, **kwargs):
     cursor = conn.cursor()
-    cursor.execute('SELECT id,title,slug,content,last_update FROM posts WHERE slug=:slug', {'slug': slug})
+    query = " and ".join(['%s=:%s' % (key, key) for key in kwargs.keys()])
+    cursor.execute('SELECT id,title,slug,content,last_update FROM posts WHERE %s' % query, kwargs)
     result = cursor.fetchone()
     if result:
         return Post(*result)

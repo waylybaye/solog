@@ -44,7 +44,7 @@ class DbTest(unittest.TestCase):
         post = views.Post(id=None, title='Hello', content="<h1>Good<h1>", slug="hello-world", last_update=datetime.now())
         db_save_post(conn, post)
 
-        saved_post = db_get_post(conn, 'hello-world')
+        saved_post = db_get_post(conn, slug='hello-world')
         self.assertEqual(post.title, 'Hello')
 
         self.assertEqual(len(db_list_post(conn)), 1)
@@ -54,7 +54,7 @@ class DbTest(unittest.TestCase):
         saved_post.title = "New Title"
         db_save_post(conn, saved_post)
         self.assertEqual(len(db_list_post(conn)), 2)
-        self.assertEqual(db_get_post(conn, 'hello-world').title, "New Title")
+        self.assertEqual(db_get_post(conn, slug='hello-world').title, "New Title")
 
 
 class AppTest(unittest.TestCase):
