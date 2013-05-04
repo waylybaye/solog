@@ -181,6 +181,9 @@ def dropbox_sync():
     new_or_updated_files = []
 
     for content in metas['contents']:
+        if content['is_dir']:
+            continue
+
         name = content['path']
         modified = parser.parse(content['modified'])
 
@@ -219,7 +222,7 @@ def dropbox_sync():
         local_ctime = os.path.getctime(sync_file)
         gmtime = time.gmtime(local_ctime)
         ctime = datetime.fromtimestamp(time.mktime(gmtime))
-        ctime.replace(tzinfo=tz.tzutc())
+        ctime = ctime.replace(tzinfo=tz.tzutc())
 
         if not filename in dropbox_last_modified or ctime > dropbox_last_modified[filename]:
             fp = open(sync_file, 'rb')
@@ -302,6 +305,10 @@ class Post(object):
         self.title = title
         self.slug = slug
         self.content = content
+        if isinstance(publish_date, basestring):
+            publish_date = parser.parse(publish_date)
+        if isinstance(last_update, basestring):
+            last_update = parser.parse(last_update)
         self.publish_date = publish_date
         self.last_update = last_update
         self.filename = filename
@@ -311,7 +318,6 @@ FIELDS = ['title', 'slug', 'content', 'filename', 'publish_date', 'last_update']
 
 
 def db_initialize(conn):
-    # conn = sqlite3.connect(CACHE_DB_FILE)
     conn.execute('''CREATE TABLE IF NOT EXISTS posts
                 (id integer primary key, title text, slug text,
                 content text, last_update timestamp,
@@ -322,7 +328,6 @@ def db_initialize(conn):
 def db_save_post(conn, post):
     cursor = conn.cursor()
     if post.id:
-        print "UPDATE posts SET %s" % ",".join(["%s=?" % field for field in FIELDS])
         cursor.execute(
             "UPDATE posts SET %s" % ",".join(["%s=?" % field for field in FIELDS]),
             [getattr(post, field) for field in FIELDS])

@@ -46,6 +46,7 @@ class DbTest(unittest.TestCase):
 
         saved_post = db_get_post(conn, slug='hello-world')
         self.assertEqual(post.title, 'Hello')
+        self.assertEqual(type(saved_post.last_update), datetime)
 
         self.assertEqual(len(db_list_post(conn)), 1)
         db_save_post(conn, post)
